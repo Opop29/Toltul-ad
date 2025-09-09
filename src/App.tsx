@@ -36,14 +36,14 @@ import './theme/variables.css';
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
+ <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/home">
+      <Route exact path="/Toltul-ad/home">
           <Home />
         </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
+        <Route exact path="/Toltul-ad/">
+        <Redirect to="/Toltul-ad/home" />
         </Route>
       </IonRouterOutlet>
     </IonReactRouter>
