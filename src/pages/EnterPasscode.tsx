@@ -48,9 +48,9 @@ const EnterPasscode: React.FC = () => {
     setLoading(false);
 
     if (error || !data) {
-      vibrate([200, 100, 200]); 
-      setShake(true);
-      setTimeout(() => setShake(false), 500); 
+      vibrate([200, 100, 200]);
+      setShake(true); 
+      setTimeout(() => setShake(false), 500);
 
       setToastMessage("❌ Invalid Passcode");
       setToastColor("danger");
@@ -61,6 +61,9 @@ const EnterPasscode: React.FC = () => {
       setToastMessage("✅ Access Granted");
       setToastColor("success");
       setShowToast(true);
+ 
+      localStorage.setItem("authenticated", "true");
+
       setPasscode("");
       setTimeout(() => {
         history.push("/Toltul-ad/home");
@@ -70,7 +73,7 @@ const EnterPasscode: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent className="ion-padding ion-text-center" fullscreen>
+      <IonContent className="ion-padding ion-text-center fade-in" fullscreen>
         <div
           style={{
             maxWidth: "90%",
