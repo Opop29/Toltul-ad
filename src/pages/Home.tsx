@@ -6,7 +6,9 @@ const Home: React.FC = () => {
   const history = useHistory();
 
   const handleLogout = () => {
-    history.push("/Toltul-ad/enter");
+    localStorage.removeItem("authenticated");
+
+    history.push("/Toltul-ad/enter-passcode");
   };
 
   return (
