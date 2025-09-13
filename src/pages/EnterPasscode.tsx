@@ -23,7 +23,7 @@ const EnterPasscode: React.FC = () => {
       setToastMessage("✅ Access Granted");
       setShowToast(true);
       setTimeout(() => {
-        history.push("/home");
+        history.push("/Toltul-ad/home");
       }, 1000);
     }
   };
