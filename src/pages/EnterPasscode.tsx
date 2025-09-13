@@ -28,6 +28,7 @@ const EnterPasscode: React.FC = () => {
   }, []);
 
   const handleCheckPasscode = async () => {
+    if (!passcode.trim()) return; // prevent empty submits
     setLoading(true);
 
     const { data, error } = await supabase
@@ -82,6 +83,11 @@ const EnterPasscode: React.FC = () => {
               type={showPasscode ? "text" : "password"}
               value={passcode}
               onIonChange={(e) => setPasscode(e.detail.value!)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleCheckPasscode();
+                }
+              }}
             />
             <IonIcon
               slot="end"
