@@ -13,6 +13,7 @@ import {
 import { useHistory } from "react-router-dom";
 import { supabase } from "../utils/supabaseClient";
 import { eye, eyeOff } from "ionicons/icons";
+import "../css/EnterPasscode.css"; 
 
 const EnterPasscode: React.FC = () => {
   const [passcode, setPasscode] = useState("");
@@ -21,6 +22,7 @@ const EnterPasscode: React.FC = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastColor, setToastColor] = useState<"success" | "danger">("success");
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
   const history = useHistory();
 
   useEffect(() => {
@@ -46,13 +48,16 @@ const EnterPasscode: React.FC = () => {
     setLoading(false);
 
     if (error || !data) {
-      vibrate([200, 100, 200]);
+      vibrate([200, 100, 200]); 
+      setShake(true);
+      setTimeout(() => setShake(false), 500); 
+
       setToastMessage("❌ Invalid Passcode");
       setToastColor("danger");
       setShowToast(true);
       setPasscode("");
     } else {
-      vibrate(150);
+      vibrate(150); 
       setToastMessage("✅ Access Granted");
       setToastColor("success");
       setShowToast(true);
@@ -65,10 +70,7 @@ const EnterPasscode: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent
-        className="ion-padding ion-text-center"
-        fullscreen
-      >
+      <IonContent className="ion-padding ion-text-center" fullscreen>
         <div
           style={{
             maxWidth: "90%",
@@ -84,7 +86,7 @@ const EnterPasscode: React.FC = () => {
             🔑 Enter Passcode
           </h1>
 
-          <IonItem>
+          <IonItem className={shake ? "shake" : ""}>
             <IonLabel position="floating">Passcode</IonLabel>
             <IonInput
               type={showPasscode ? "text" : "password"}
