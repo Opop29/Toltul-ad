@@ -27,8 +27,14 @@ const EnterPasscode: React.FC = () => {
     setPasscode("");
   }, []);
 
+  const vibrate = (pattern: number | number[]) => {
+    if ("vibrate" in navigator) {
+      navigator.vibrate(pattern);
+    }
+  };
+
   const handleCheckPasscode = async () => {
-    if (!passcode.trim()) return; // prevent empty submits
+    if (!passcode.trim()) return;
     setLoading(true);
 
     const { data, error } = await supabase
@@ -40,11 +46,13 @@ const EnterPasscode: React.FC = () => {
     setLoading(false);
 
     if (error || !data) {
+      vibrate([200, 100, 200]);
       setToastMessage("❌ Invalid Passcode");
       setToastColor("danger");
       setShowToast(true);
       setPasscode("");
     } else {
+      vibrate(150);
       setToastMessage("✅ Access Granted");
       setToastColor("success");
       setShowToast(true);
@@ -61,7 +69,6 @@ const EnterPasscode: React.FC = () => {
         className="ion-padding ion-text-center"
         fullscreen
       >
-        {/* Responsive container */}
         <div
           style={{
             maxWidth: "90%",
