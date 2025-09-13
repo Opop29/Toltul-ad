@@ -8,12 +8,15 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-  IonIcon
+  IonIcon,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
 import { supabase } from "../utils/supabaseClient";
 import { eye, eyeOff } from "ionicons/icons";
-import "../css/EnterPasscode.css"; 
+import "../css/EnterPasscode.css";
 
 const EnterPasscode: React.FC = () => {
   const [passcode, setPasscode] = useState("");
@@ -49,7 +52,7 @@ const EnterPasscode: React.FC = () => {
 
     if (error || !data) {
       vibrate([200, 100, 200]);
-      setShake(true); 
+      setShake(true);
       setTimeout(() => setShake(false), 500);
 
       setToastMessage("❌ Invalid Passcode");
@@ -57,11 +60,11 @@ const EnterPasscode: React.FC = () => {
       setShowToast(true);
       setPasscode("");
     } else {
-      vibrate(150); 
+      vibrate(150);
       setToastMessage("✅ Access Granted");
       setToastColor("success");
       setShowToast(true);
- 
+
       localStorage.setItem("authenticated", "true");
 
       setPasscode("");
@@ -73,7 +76,19 @@ const EnterPasscode: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent className="ion-padding ion-text-center fade-in" fullscreen>
+      {/* Header with title */}
+      
+        
+         
+       
+      
+
+      {/* Content with cool background */}
+      <IonContent
+        fullscreen
+        className="ion-padding ion-text-center fade-in enter-passcode-bg"
+      >
+         <IonTitle className="ion-text-center">Toltul-AD</IonTitle>
         <div
           style={{
             maxWidth: "90%",
@@ -82,12 +97,23 @@ const EnterPasscode: React.FC = () => {
             marginTop: "20vh",
             display: "flex",
             flexDirection: "column",
-            gap: "1rem"
+            gap: "1.5rem",
+            background: "rgba(255, 255, 255, 0.9)",
+            padding: "2rem",
+            borderRadius: "20px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
           }}
         >
-          <h1 style={{ fontSize: "clamp(1.5rem, 4vw, 2.5rem)" }}>
-            🔑 Enter Passcode
-          </h1>
+        <h1
+  style={{
+    fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
+    color: "#1E3A8A",
+    textAlign: "center",
+  }}
+>
+   Enter Passcode
+</h1>
+
 
           <IonItem className={shake ? "shake" : ""}>
             <IonLabel position="floating">Passcode</IonLabel>
@@ -111,6 +137,7 @@ const EnterPasscode: React.FC = () => {
 
           <IonButton
             expand="block"
+            color="primary"
             onClick={handleCheckPasscode}
             disabled={!passcode.trim() || loading}
           >
