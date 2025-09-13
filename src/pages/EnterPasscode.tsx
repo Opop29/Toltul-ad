@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { IonPage, IonContent, IonInput, IonButton, IonToast } from "@ionic/react";
 import { useHistory } from "react-router-dom";
-import { supabase } from "../supabaseClient"; // make sure you have supabase client setup
+import { supabase } from "../utils/supabaseClient";
 
 const EnterPasscode: React.FC = () => {
   const [passcode, setPasscode] = useState("");
