@@ -39,6 +39,7 @@ const Home: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding ion-text-center home-content">
+          {loggingOut && <div className="global-blur" />}
           <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
           <div className="home-hero">
             <h1 className="home-title">Welcome to Toltul AD</h1>

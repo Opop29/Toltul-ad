@@ -40,6 +40,7 @@ const AppMenu: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding home-menu">
+        {loggingOut && <div className="global-blur" />}
         <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
         <div className="menu-header ion-text-center">
           <IonAvatar className="menu-avatar">

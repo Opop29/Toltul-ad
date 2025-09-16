@@ -82,4 +82,18 @@
   margin: 8px 12px;
 }
 
+/* Global blur overlay used during logout */
+.global-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  background: rgba(230, 240, 255, 0.35);
+  z-index: 999;
+  pointer-events: none;
+}
+
 
