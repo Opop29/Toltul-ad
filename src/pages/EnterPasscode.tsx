@@ -31,6 +31,8 @@ import {
   IonContent,
   IonSpinner,
   IonTitle,
+  IonLoading,
+  IonAlert,
   useIonViewDidEnter,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
@@ -42,6 +44,8 @@ const EnterPasscode: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [successLoading, setSuccessLoading] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState<"success" | "error" | "">("");
@@ -106,7 +110,11 @@ const EnterPasscode: React.FC = () => {
       vibrate(150);
       showModal("✅ Access Granted", "success");
       localStorage.setItem("authenticated", "true");
-      setTimeout(() => history.replace("/Toltul-ad/home"), 800);
+      setSuccessLoading(true);
+      setTimeout(() => {
+        setSuccessLoading(false);
+        setShowWelcome(true);
+      }, 5000);
     }
   };
 
@@ -146,6 +154,25 @@ const EnterPasscode: React.FC = () => {
     
     <IonPage>
       <IonContent className="enter-passcode-bg" fullscreen>
+        <IonLoading isOpen={successLoading} message="Preparing your experience..." spinner="crescent" translucent />
+        <IonAlert
+          isOpen={showWelcome}
+          header="Welcome"
+          message="You have successfully logged in."
+          buttons={[
+            {
+              text: "OK",
+              handler: () => {
+                try { window.location.href = "/Toltul-ad/home"; } catch {}
+              },
+            },
+          ]}
+          onDidDismiss={() => {
+            if (showWelcome) {
+              try { window.location.href = "/Toltul-ad/home"; } catch {}
+            }
+          }}
+        />
         <ArrowBackground />
         <div className="glass-card passcode-pin-container enhanced-card">
           {/* Logo at the top */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   IonMenu,
   IonHeader,
@@ -11,6 +11,7 @@ import {
   IonLabel,
   IonAvatar,
   IonButton,
+  IonLoading,
 } from "@ionic/react";
 import { homeOutline, addCircleOutline, constructOutline, barChartOutline, logOutOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
@@ -19,11 +20,16 @@ import { menuController } from "@ionic/core";
 
 const AppMenu: React.FC = () => {
   const history = useHistory();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     localStorage.removeItem("authenticated");
     try { await menuController.close(); } catch {}
-    history.replace("/Toltul-ad/enter-passcode");
+    setTimeout(() => {
+      try { history.replace("/Toltul-ad/enter-passcode"); } catch {}
+      try { window.location.href = "/Toltul-ad/enter-passcode"; } catch {}
+    }, 2000);
   };
 
   return (
@@ -34,6 +40,7 @@ const AppMenu: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding home-menu">
+        <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
         <div className="menu-header ion-text-center">
           <IonAvatar className="menu-avatar">
             <img src="https://i.pravatar.cc/150?img=13" alt="User" />
@@ -63,7 +70,7 @@ const AppMenu: React.FC = () => {
 
         <div style={{ height: 24 }} />
 
-        <IonButton expand="block" color="danger" onClick={handleLogout}>
+        <IonButton expand="block" color="danger" onClick={handleLogout} disabled={loggingOut}>
           <IonIcon slot="start" icon={logOutOutline} />
           Logout
         </IonButton>

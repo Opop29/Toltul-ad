@@ -3,7 +3,7 @@ import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMe
 
 const Builded: React.FC = () => {
   return (
-    <IonPage id="main">
+    <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
