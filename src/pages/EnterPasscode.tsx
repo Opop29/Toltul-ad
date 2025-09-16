@@ -1,4 +1,3 @@
-
 const ArrowBackground: React.FC = () => {
   const [arrows, setArrows] = useState<Array<{left: number, delay: number, size: number}>>([]);
   useEffect(() => {
@@ -124,7 +123,7 @@ const EnterPasscode: React.FC = () => {
     const handleFocus = () => {
       setTimeout(() => {
         inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 200); 
+      }, 200);
     };
     const input = inputRef.current;
     if (input) {
