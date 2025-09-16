@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   IonPage,
   IonContent,
-  IonToast,
   IonSpinner,
   IonTitle,
 } from "@ionic/react";
@@ -16,21 +15,41 @@ const EnterPasscode: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastColor, setToastColor] = useState<"success" | "danger">("success");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<"success" | "error" | "">("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const history = useHistory();
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+   
+    setPin(Array(6).fill(""));
+    setActiveIndex(0);
+    setModalMessage("");
+    setModalType("");
+    if (inputRef.current) inputRef.current.value = "";
+  
   }, []);
+
+  useEffect(() => {
+    if (modalMessage) {
+      const timer = setTimeout(() => {
+        setPin(Array(6).fill(""));
+        setActiveIndex(0);
+        setModalMessage("");
+        setModalType("");
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [modalMessage]);
 
   const vibrate = (pattern: number | number[]) => {
     if ("vibrate" in navigator) navigator.vibrate(pattern);
+  };
+
+  const showModal = (message: string, type: "success" | "error") => {
+    setModalMessage(message);
+    setModalType(type);
   };
 
   const checkPasscode = async (code: string) => {
@@ -49,23 +68,17 @@ const EnterPasscode: React.FC = () => {
       vibrate([200, 100, 200]);
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      setToastMessage("❌ Invalid Passcode");
-      setToastColor("danger");
-      setShowToast(true);
-      setPin(Array(6).fill(""));
-      setActiveIndex(0);
+      showModal("❌ Incorrect Passcode", "error");
     } else {
       vibrate(150);
-      setToastMessage("✅ Access Granted");
-      setToastColor("success");
-      setShowToast(true);
+      showModal("✅ Access Granted", "success");
       localStorage.setItem("authenticated", "true");
-      setTimeout(() => history.push("/Toltul-ad/home"), 900);
+      setTimeout(() => history.push("/Toltul-ad/home"), 1200);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ""); // only numbers
+    let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 6) value = value.slice(0, 6);
 
     const newPin = value.split("");
@@ -82,13 +95,15 @@ const EnterPasscode: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="enter-passcode-bg" fullscreen>
-        <div className="glass-card passcode-pin-container">
-          {/* Logo */}
-          <img src="../assets/logo.png" alt="Logo" className="app-logo" />
+        <div className="glass-card passcode-pin-container enhanced-card">
+          {/* Logo at the top */}
+          <img src="/assets/logo.png" alt="Logo" className="app-logo enhanced-logo" />
 
-          {/* Title */}
-          <IonTitle className="ion-text-center tech-title">Toltul-AD</IonTitle>
-          <h1 className="gradient-title">🔑 Enter Passcode</h1>
+          {/* Bigger Title */}
+          <IonTitle className="tech-title enhanced-title">Toltul-AD</IonTitle>
+
+          {/* "Enter Passcode" just below the title */}
+          <h1 className="gradient-title enhanced-gradient-title">🔑 Enter Passcode</h1>
 
           {/* Hidden Input */}
           <input
@@ -99,35 +114,43 @@ const EnterPasscode: React.FC = () => {
             value={pin.join("")}
             onChange={handleChange}
             className="hidden-pass-input"
+            aria-label="Enter 6-digit passcode"
+            autoFocus
           />
 
           {/* PIN Boxes */}
-          <div className={`pin-boxes ${shake ? "shake" : ""}`}>
+          <div className={`pin-boxes enhanced-pin-boxes ${shake ? "shake" : ""}`}>
             {pin.map((digit, i) => (
               <div
                 key={i}
-                className={`pin-box ${digit ? "filled" : ""} ${
+                className={`pin-box enhanced-pin-box ${digit ? "filled" : ""} ${
                   i === activeIndex ? "active" : ""
                 }`}
                 onClick={() => inputRef.current?.focus()}
+                tabIndex={0}
+                aria-label={digit ? "Filled" : "Empty"}
               >
-                {digit ? "●" : ""}
+                {digit ? (
+                  <span className="pin-dot" />
+                ) : (
+                  <span className="pin-placeholder" />
+                )}
               </div>
             ))}
           </div>
 
           {/* Loading Spinner */}
-          {loading && <IonSpinner name="crescent" className="loading-spinner" />}
+          {loading && <IonSpinner name="crescent" className="loading-spinner enhanced-spinner" />}
         </div>
 
-        {/* Toast */}
-        <IonToast
-          isOpen={showToast}
-          message={toastMessage}
-          color={toastColor}
-          duration={1500}
-          onDidDismiss={() => setShowToast(false)}
-        />
+        {/* Modal Notification */}
+        {modalMessage && (
+          <div
+            className={`passcode-modal enhanced-modal ${modalType === "success" ? "success" : "error"}`}
+          >
+            {modalMessage}
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );
