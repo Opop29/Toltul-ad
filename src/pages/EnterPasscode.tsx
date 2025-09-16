@@ -59,6 +59,13 @@ const EnterPasscode: React.FC = () => {
   });
 
   useEffect(() => {
+    const isAuth = localStorage.getItem("authenticated") === "true";
+    if (isAuth) {
+      history.replace("/Toltul-ad/home");
+    }
+  }, [history]);
+
+  useEffect(() => {
    
     setPin(Array(6).fill(""));
     setActiveIndex(0);
