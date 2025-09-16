@@ -4,7 +4,6 @@ import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 import EnterPasscode from "./pages/EnterPasscode";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PublicRoute from "./components/PublicRoute";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -18,6 +17,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 import "@ionic/react/css/palettes/dark.system.css";
 import "./theme/variables.css";
+import TabsLayout from "./layouts/TabsLayout";
 
 setupIonicReact();
 
@@ -25,14 +25,20 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <PublicRoute exact path="/Toltul-ad/enter-passcode" component={EnterPasscode} />
+        <Route exact path="/Toltul-ad/enter-passcode" component={EnterPasscode} />
         <ProtectedRoute exact path="/Toltul-ad/home" component={Home} />
         <Route exact path="/Toltul-ad/">
           <Redirect to="/Toltul-ad/enter-passcode" />
         </Route>
       </IonRouterOutlet>
+      <ProtectedRoute path="/Toltul-ad" component={TabsLayout} />
     </IonReactRouter>
   </IonApp>
 );
 
 export default App;
+
+
+
+
+

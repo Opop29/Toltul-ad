@@ -1,0 +1,40 @@
+.tabs-bar {
+  --background: #ffffff;
+  --color: #0b2e66;
+  --color-selected: #0b2e66;
+  border-top: 1px solid rgba(11, 46, 102, 0.12);
+  backdrop-filter: saturate(1.2) blur(4px);
+}
+
+.tab-btn {
+  position: relative;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.12s ease;
+}
+
+.tab-btn:hover {
+  background: linear-gradient(180deg, rgba(230, 240, 255, 0.9) 0%, rgba(255, 255, 255, 1) 100%);
+  transform: translateY(-1px);
+}
+
+.tab-btn.ion-selected {
+  color: #0b2e66;
+}
+
+.tab-btn .tab-indicator {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 6px;
+  height: 3px;
+  background: linear-gradient(90deg, #0b2e66 0%, #3a6bbf 100%);
+  border-radius: 3px;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+
+.tab-btn.ion-selected .tab-indicator {
+  transform: scaleX(1);
+}
+
+

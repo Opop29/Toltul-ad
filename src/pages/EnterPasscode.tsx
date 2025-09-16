@@ -31,6 +31,7 @@ import {
   IonContent,
   IonSpinner,
   IonTitle,
+  useIonViewDidEnter,
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
 import { supabase } from "../utils/supabaseClient";
@@ -47,6 +48,11 @@ const EnterPasscode: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const history = useHistory();
+
+  useIonViewDidEnter(() => {
+    // Focus only when this page is active to avoid aria-hidden ancestor issues
+    setTimeout(() => inputRef.current?.focus(), 0);
+  });
 
   useEffect(() => {
    
@@ -100,7 +106,7 @@ const EnterPasscode: React.FC = () => {
       vibrate(150);
       showModal("✅ Access Granted", "success");
       localStorage.setItem("authenticated", "true");
-      setTimeout(() => history.push("/Toltul-ad/home"), 1200);
+      setTimeout(() => history.replace("/Toltul-ad/home"), 800);
     }
   };
 
@@ -161,7 +167,6 @@ const EnterPasscode: React.FC = () => {
             onChange={handleChange}
             className="hidden-pass-input"
             aria-label="Enter 6-digit passcode"
-            autoFocus
           />
 
           {/* PIN Boxes */}
