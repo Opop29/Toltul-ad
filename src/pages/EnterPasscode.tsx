@@ -152,9 +152,53 @@ const EnterPasscode: React.FC = () => {
             {modalMessage}
           </div>
         )}
+
+        {/* Animated Arrows Background */}
+        <div className="arrows">
+          {[...Array(7)].map((_, i) => (
+            <div
+              key={i}
+              className="arrow"
+              style={{
+                left: `${Math.random() * 90}vw`,
+                animationDelay: `${Math.random() * 10}s`,
+                width: `${30 + Math.random() * 40}px`,
+                height: `${30 + Math.random() * 40}px`,
+              }}
+            />
+          ))}
+        </div>
       </IonContent>
     </IonPage>
   );
 };
 
 export default EnterPasscode;
+.arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.arrow {
+  position: absolute;
+  top: 100vh;
+  /* Arrow shape using border */
+  width: 50px;
+  height: 50px;
+  border-left: 12px solid #007cf0;
+  border-bottom: 12px solid #00dfd8;
+  transform: rotate(-45deg);
+  opacity: 0.7;
+  animation: arrowFloat 12s linear infinite;
+}
+
+@keyframes arrowFloat {
+  0% { top: 100vh; opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { top: -60px; opacity: 0.2; }
+}
