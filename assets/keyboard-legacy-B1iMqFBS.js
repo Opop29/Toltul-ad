@@ -1,4 +1,4 @@
-System.register(["./index-legacy-DkgpdEXc.js"],function(e,t){"use strict";var i;return{setters:[e=>{i=e.K}],execute:function(){
+System.register(["./index-legacy-Dni24drh.js"],function(e,t){"use strict";var i;return{setters:[e=>{i=e.K}],execute:function(){
 /*!
              * (C) Ionic http://ionicframework.com - MIT License
              */
