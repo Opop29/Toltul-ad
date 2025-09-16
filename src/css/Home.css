@@ -1,0 +1,85 @@
+.home-content {
+  --background: linear-gradient(180deg, #e6f0ff 0%, #ffffff 100%);
+}
+
+.home-hero {
+  padding: 24px 12px 8px;
+  color: #0b2e66;
+}
+
+.home-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.home-subtitle {
+  margin-top: 8px;
+  color: #3a6bbf;
+}
+
+.home-card {
+  margin: 18px auto 0;
+  padding: 16px;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(11, 46, 102, 0.1);
+  text-align: left;
+}
+
+.home-card h2 {
+  margin: 0 0 8px 0;
+  color: #0b2e66;
+}
+
+.home-card p {
+  margin: 0 0 12px 0;
+  color: #3d5a80;
+}
+
+.home-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Menu styles */
+.home-menu {
+  --background: linear-gradient(180deg, #0b2e66 0%, #3a6bbf 100%);
+  color: #ffffff;
+}
+
+.menu-header {
+  margin: 16px 0 8px;
+}
+
+.menu-avatar {
+  margin: 0 auto 8px;
+  width: 72px;
+  height: 72px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.menu-title {
+  margin: 0;
+  color: #ffffff;
+}
+
+.menu-subtitle {
+  margin: 4px 0 0 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-list {
+  background: transparent;
+}
+
+.menu-item {
+  --background: rgba(255, 255, 255, 0.06);
+  --color: #ffffff;
+  border-radius: 12px;
+  margin: 8px 12px;
+}
+
+

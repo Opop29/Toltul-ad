@@ -17,6 +17,7 @@ import {
 } from "@ionic/react";
 import { logOutOutline, homeOutline, settingsOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
+import "../css/Home.css";
 
 const Home: React.FC = () => {
   const history = useHistory();
@@ -35,21 +36,21 @@ const Home: React.FC = () => {
             <IonTitle>Menu</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding">
-          <div className="ion-text-center" style={{ margin: "16px 0" }}>
-            <IonAvatar style={{ margin: "0 auto", width: "72px", height: "72px" }}>
+        <IonContent className="ion-padding home-menu">
+          <div className="menu-header ion-text-center">
+            <IonAvatar className="menu-avatar">
               <img src="https://i.pravatar.cc/150?img=13" alt="User" />
             </IonAvatar>
-            <h2 style={{ marginTop: 12 }}>🎉 Welcome</h2>
-            <p style={{ color: "var(--ion-color-medium)" }}>You are signed in</p>
+            <h2 className="menu-title">🎉 Welcome</h2>
+            <p className="menu-subtitle">You are signed in</p>
           </div>
 
-          <IonList>
-            <IonItem button detail={false} lines="full">
+          <IonList className="menu-list">
+            <IonItem button detail={false} lines="full" className="menu-item">
               <IonIcon slot="start" icon={homeOutline} />
               <IonLabel>Home</IonLabel>
             </IonItem>
-            <IonItem button detail={false} lines="none">
+            <IonItem button detail={false} lines="none" className="menu-item">
               <IonIcon slot="start" icon={settingsOutline} />
               <IonLabel>Settings</IonLabel>
             </IonItem>
@@ -73,9 +74,20 @@ const Home: React.FC = () => {
             <IonTitle>Home</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding ion-text-center">
-          <h1>🎉 Welcome to Home Page</h1>
-          <p>You have successfully entered the passcode!</p>
+        <IonContent className="ion-padding ion-text-center home-content">
+          <div className="home-hero">
+            <h1 className="home-title">Welcome to Toltul AD</h1>
+            <p className="home-subtitle">You have successfully entered the passcode</p>
+          </div>
+
+          <div className="home-card">
+            <h2>Quick Actions</h2>
+            <p>Use the menu to explore and logout when you’re done.</p>
+            <div className="home-actions">
+              <IonButton color="primary" fill="solid">Open Menu</IonButton>
+              <IonButton color="light" fill="outline" onClick={handleLogout}>Logout</IonButton>
+            </div>
+          </div>
         </IonContent>
       </IonPage>
     </>
