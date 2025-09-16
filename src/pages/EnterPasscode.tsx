@@ -1,3 +1,31 @@
+
+const ArrowBackground: React.FC = () => {
+  const [arrows, setArrows] = useState<Array<{left: number, delay: number, size: number}>>([]);
+  useEffect(() => {
+    const arr = Array.from({length: 8}, () => ({
+      left: Math.random() * 90, 
+      delay: Math.random() * 10, 
+      size: 30 + Math.random() * 40 
+    }));
+    setArrows(arr);
+  }, []);
+  return (
+    <div className="arrow-bg">
+      {arrows.map((a, i) => (
+        <div
+          key={i}
+          className="arrow"
+          style={{
+            left: `${a.left}vw`,
+            animationDelay: `${a.delay}s`,
+            width: `${a.size}px`,
+            height: `${a.size}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 import React, { useState, useEffect, useRef } from "react";
 import {
   IonPage,
@@ -92,10 +120,28 @@ const EnterPasscode: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleFocus = () => {
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200); 
+    };
+    const input = inputRef.current;
+    if (input) {
+      input.addEventListener("focus", handleFocus);
+    }
+    return () => {
+      if (input) {
+        input.removeEventListener("focus", handleFocus);
+      }
+    };
+  }, []);
+
   return (
     
     <IonPage>
       <IonContent className="enter-passcode-bg" fullscreen>
+        <ArrowBackground />
         <div className="glass-card passcode-pin-container enhanced-card">
           {/* Logo at the top */}
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
@@ -160,8 +206,8 @@ const EnterPasscode: React.FC = () => {
               key={i}
               className="arrow"
               style={{
-                left: `${Math.random() * 90}vw`,
-                animationDelay: `${Math.random() * 10}s`,
+                left: `${Math.random() * 100}vw`,
+                animationDelay: `${Math.random() * 100}s`,
                 width: `${30 + Math.random() * 40}px`,
                 height: `${30 + Math.random() * 40}px`,
               }}
@@ -174,31 +220,3 @@ const EnterPasscode: React.FC = () => {
 };
 
 export default EnterPasscode;
-.arrows {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.arrow {
-  position: absolute;
-  top: 100vh;
-  /* Arrow shape using border */
-  width: 50px;
-  height: 50px;
-  border-left: 12px solid #007cf0;
-  border-bottom: 12px solid #00dfd8;
-  transform: rotate(-45deg);
-  opacity: 0.7;
-  animation: arrowFloat 12s linear infinite;
-}
-
-@keyframes arrowFloat {
-  0% { top: 100vh; opacity: 0.7; }
-  50% { opacity: 1; }
-  100% { top: -60px; opacity: 0.2; }
-}
