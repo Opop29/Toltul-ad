@@ -1,4 +1,20 @@
-/* Background */
+@media (max-width: 600px) {
+  .app-logo,
+  .enhanced-logo {
+    margin-bottom: 100px;
+  }
+}
+@media (max-width: 600px) {
+  .glass-card {
+    min-height: 60vh;
+    height: auto;
+    max-height: 100vh;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-bottom: 32px;
+  }
+}
+
 .enter-passcode-bg {
   --background: linear-gradient(135deg, #e3f0ff 0%, #b3d8ff 50%, #007cf0 100%);
   position: fixed;
@@ -20,11 +36,10 @@
   50% { background-position: 100% 50%; }
 }
 
-/* Responsive Glass Card */
 .glass-card {
   width: auto;
   max-width: auto;
-  min-height: 80vh;
+  min-height: auto;
   margin: 32px 16px;
   display: flex;
   flex-direction: column;

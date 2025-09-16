@@ -93,11 +93,12 @@ const EnterPasscode: React.FC = () => {
   };
 
   return (
+    
     <IonPage>
       <IonContent className="enter-passcode-bg" fullscreen>
         <div className="glass-card passcode-pin-container enhanced-card">
           {/* Logo at the top */}
-          <img src="/assets/logo.png" alt="Logo" className="app-logo enhanced-logo" />
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
 
           {/* Bigger Title */}
           <IonTitle className="tech-title enhanced-title">Toltul-AD</IonTitle>
