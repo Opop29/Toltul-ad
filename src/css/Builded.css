@@ -1,0 +1,81 @@
+/* Modern card style for Builded page */
+.builded-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 0;
+}
+.builded-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,124,240,0.10);
+  padding: 24px 18px;
+  margin: 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.poi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+.poi-item {
+  background: #f7fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,124,240,0.06);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.poi-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.poi-name {
+  font-weight: 700;
+  color: #007cf0;
+  font-size: 1.1rem;
+}
+.poi-coords {
+  font-size: 0.95rem;
+  color: #444;
+}
+.poi-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  background: #007cf0;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn.view {
+  background: #00dfd8;
+}
+.btn.edit {
+  background: #ffc107;
+  color: #222;
+}
+.btn.coords {
+  background: #e3f0ff;
+  color: #007cf0;
+}
+.btn:active {
+  background: #005fa3;
+}
+.empty {
+  color: #888;
+  font-size: 1rem;
+  text-align: center;
+  margin-top: 24px;
+}

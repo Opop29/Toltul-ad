@@ -85,4 +85,66 @@
   box-shadow: 0 0 6px rgba(0,0,0,0.22);
 }
 
+/* Pen config */
+.pen-config { border: 1px solid rgba(11,46,102,0.12); border-radius: 10px; padding: 8px; background: #ffffff; }
+.pen-config .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.pen-config .row.grid2 { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
+.pen-config label { color: #0b2e66; min-width: 80px; }
+.pen-config .chk { color: #0b2e66; }
+.hint { color: #3a6bbf; font-size: 12px; }
+
+/* New pen creation styles */
+.pen-create-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,124,240,0.10);
+  padding: 24px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.pen-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.pen-preview-marker {
+  border-radius: 50%;
+  border: 2px solid #007cf0;
+  box-shadow: 0 2px 8px rgba(0,124,240,0.10);
+}
+.pen-preview-name {
+  font-weight: 600;
+  color: #007cf0;
+  font-size: 1.1rem;
+}
+.poi-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #007cf0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,124,240,0.08);
+  pointer-events: none;
+}
+.btn.view {
+  background: #00dfd8;
+  color: #fff;
+  margin-left: 8px;
+}
+
+/* Responsive: stack on mobile */
+@media (max-width: 768px) {
+  .create-wrap { flex-direction: column; }
+  .side-panel { width: 100%; max-width: none; border-left: none; border-top: 1px solid rgba(11,46,102,0.12); }
+  .poi-list { max-height: 30vh; }
+}
+
 
