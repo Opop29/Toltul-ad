@@ -54,8 +54,21 @@ const EnterPasscode: React.FC = () => {
   const history = useHistory();
 
   useIonViewDidEnter(() => {
-    // Focus only when this page is active to avoid aria-hidden ancestor issues
-    setTimeout(() => inputRef.current?.focus(), 0);
+    // Focus only when this page is active and not aria-hidden
+    setTimeout(() => {
+      const input = inputRef.current;
+      if (!input) return;
+      let ancestor = input.parentElement;
+      let hiddenAncestor = false;
+      while (ancestor) {
+        if (ancestor.getAttribute && ancestor.getAttribute('aria-hidden') === 'true') {
+          hiddenAncestor = true;
+          break;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      if (!hiddenAncestor) input.focus();
+    }, 0);
   });
 
   useEffect(() => {
@@ -158,9 +171,8 @@ const EnterPasscode: React.FC = () => {
   }, []);
 
   return (
-    
     <IonPage>
-      <IonContent className="enter-passcode-bg" fullscreen>
+  <IonContent className="enter-passcode-bg" fullscreen inert={!!document.querySelector('ion-router-outlet[aria-hidden="true"]')}>
         <IonLoading isOpen={successLoading} message="Preparing your experience..." spinner="crescent" translucent />
         <IonAlert
           isOpen={showWelcome}
@@ -211,7 +223,19 @@ const EnterPasscode: React.FC = () => {
                 className={`pin-box enhanced-pin-box ${digit ? "filled" : ""} ${
                   i === activeIndex ? "active" : ""
                 }`}
-                onClick={() => inputRef.current?.focus()}
+                onClick={() => {
+                  // Only focus if not hidden
+                  let ancestor = inputRef.current?.parentElement;
+                  let hiddenAncestor = false;
+                  while (ancestor) {
+                    if (ancestor.getAttribute && ancestor.getAttribute('aria-hidden') === 'true') {
+                      hiddenAncestor = true;
+                      break;
+                    }
+                    ancestor = ancestor.parentElement;
+                  }
+                  if (!hiddenAncestor) inputRef.current?.focus();
+                }}
                 tabIndex={0}
                 aria-label={digit ? "Filled" : "Empty"}
               >

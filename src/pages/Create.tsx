@@ -16,6 +16,10 @@ type POI = {
   longitude: number;
   radius_meters?: number;
   is_active?: boolean;
+  pen_type?: string;
+  color?: string;
+  group_name?: string;
+  group_index?: number;
 };
 
 const Create: React.FC = () => {
@@ -212,6 +216,10 @@ const Create: React.FC = () => {
         name: p.name,
         description: p.description,
         radius_meters: p.radius_meters,
+        pen_type: p.pen_type || 'Point',
+        color: p.color || '#0b2e66',
+        group_name: p.group_name || null,
+        group_index: p.group_index || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", p.id);
@@ -240,19 +248,19 @@ const Create: React.FC = () => {
           <div ref={mapContainer} className="map-panel" />
           <div className="side-panel">
             {/* Dropdown Create Pen */}
-            {/* Dropdown Create Pen */}
+            {/* Combined dropdown container for Create Pen and POIs */}
             {(() => {
-              const [open, setOpen] = React.useState(false);
+              const [openTab, setOpenTab] = React.useState<'pen' | 'pois' | null>(null);
               return (
-                <div className="pen-create-card dropdown-form">
+                <div className="dropdown-combined-container">
                   <button
                     className="dropdown-toggle-btn"
-                    onClick={() => setOpen((v) => !v)}
-                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: "#0b2eec", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer" }}
+                    onClick={() => setOpenTab(openTab === 'pen' ? null : 'pen')}
+                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pen' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
                   >
-                    {open ? "Hide Pen Creation" : "Create Pen"}
+                    {openTab === 'pen' ? "Hide Pen Creation" : "Create Pen"}
                   </button>
-                  {open && (
+                  {openTab === 'pen' && (
                     <form className="pen-config dropdown-fields" style={{ marginTop: 18 }}>
                       <div className="row">
                         <label>Type</label>
@@ -304,23 +312,14 @@ const Create: React.FC = () => {
                       </div>
                     </form>
                   )}
-                </div>
-              );
-            })()}
-
-            {/* Dropdown POIs - scrollable and only display */}
-            {(() => {
-              const [open, setOpen] = React.useState(false);
-              return (
-                <div className="pois-card dropdown-form" style={{ marginTop: 18, maxHeight: '60vh', overflowY: 'auto' }}>
                   <button
                     className="dropdown-toggle-btn"
-                    onClick={() => setOpen((v) => !v)}
-                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: "#0b2eec", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer" }}
+                    onClick={() => setOpenTab(openTab === 'pois' ? null : 'pois')}
+                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pois' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
                   >
-                    {open ? "Hide POIs" : "POIs"}
+                    {openTab === 'pois' ? "Hide POIs" : "POIs"}
                   </button>
-                  {open && (
+                  {openTab === 'pois' && (
                     <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingBottom: 12 }}>
                       <div className="poi-list" style={{ marginTop: 12 }}>
                         {pois.map((p) => (
@@ -366,6 +365,36 @@ const Create: React.FC = () => {
                             type="number"
                             value={selected.radius_meters ?? 5}
                             onChange={(e) => setSelected({ ...selected, radius_meters: Number(e.target.value) })}
+                          />
+                          <label>Pen Type</label>
+                          <select
+                            className="input"
+                            value={selected.pen_type || 'Point'}
+                            onChange={(e) => setSelected({ ...selected, pen_type: e.target.value })}
+                          >
+                            <option value="Point">Point</option>
+                            <option value="Beacon">Beacon</option>
+                            <option value="Zone">Zone</option>
+                          </select>
+                          <label>Color</label>
+                          <input
+                            className="input"
+                            type="color"
+                            value={selected.color || '#0b2e66'}
+                            onChange={(e) => setSelected({ ...selected, color: e.target.value })}
+                          />
+                          <label>Group Name</label>
+                          <input
+                            className="input"
+                            value={selected.group_name || ''}
+                            onChange={(e) => setSelected({ ...selected, group_name: e.target.value })}
+                          />
+                          <label>Group Index</label>
+                          <input
+                            className="input"
+                            type="number"
+                            value={selected.group_index ?? ''}
+                            onChange={(e) => setSelected({ ...selected, group_index: Number(e.target.value) })}
                           />
                           <div className="editor-actions">
                             <button className="btn primary" onClick={() => updatePoi(selected)}>
