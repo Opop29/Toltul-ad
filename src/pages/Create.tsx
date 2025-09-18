@@ -240,7 +240,7 @@ const Create: React.FC = () => {
           <div ref={mapContainer} className="map-panel" />
           <div className="side-panel">
             {/* Dropdown Create Pen */}
-            {/** Dropdown state */}
+            {/* Dropdown Create Pen */}
             {(() => {
               const [open, setOpen] = React.useState(false);
               return (
@@ -308,66 +308,86 @@ const Create: React.FC = () => {
               );
             })()}
 
-            <h3 className="panel-title" style={{marginTop:12}}>POIs</h3>
-            <div className="poi-list">
-              {pois.map((p) => (
-                <div key={p.id} className="poi-item">
-                  <div className="poi-meta">
-                    <strong>{p.name}</strong>
-                    <small>
-                      {p.latitude.toFixed(5)}, {p.longitude.toFixed(5)}
-                    </small>
-                  </div>
-                  <button className="btn" onClick={() => setSelected(p)}>
-                    Edit
+            {/* Dropdown POIs - scrollable and only display */}
+            {(() => {
+              const [open, setOpen] = React.useState(false);
+              return (
+                <div className="pois-card dropdown-form" style={{ marginTop: 18, maxHeight: '60vh', overflowY: 'auto' }}>
+                  <button
+                    className="dropdown-toggle-btn"
+                    onClick={() => setOpen((v) => !v)}
+                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: "#0b2eec", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer" }}
+                  >
+                    {open ? "Hide POIs" : "POIs"}
                   </button>
-                  <button className="btn view" onClick={() => {
-                    if (mapRef.current) {
-                      mapRef.current.flyTo({ center: [p.longitude, p.latitude], zoom: 18, speed: 1.2 });
-                    }
-                  }}>
-                    View
-                  </button>
+                  {open && (
+                    <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingBottom: 12 }}>
+                      <div className="poi-list" style={{ marginTop: 12 }}>
+                        {pois.map((p) => (
+                          <div key={p.id} className="poi-item">
+                            <div className="poi-meta">
+                              <strong>{p.name}</strong>
+                              <small>
+                                {p.latitude.toFixed(5)}, {p.longitude.toFixed(5)}
+                              </small>
+                            </div>
+                            <button className="btn" onClick={() => setSelected(p)}>
+                              Edit
+                            </button>
+                            <button className="btn view" onClick={() => {
+                              if (mapRef.current) {
+                                mapRef.current.flyTo({ center: [p.longitude, p.latitude], zoom: 18, speed: 1.2 });
+                              }
+                            }}>
+                              View
+                            </button>
+                          </div>
+                        ))}
+                        {pois.length === 0 && <div className="empty">No POIs yet. Tap the map to add one.</div>}
+                      </div>
+                      {selected && (
+                        <div className="editor" style={{ position: 'sticky', bottom: 0, background: '#fff', zIndex: 2, boxShadow: '0 -2px 8px rgba(11,46,236,0.08)', paddingBottom: 12 }}>
+                          <h4>Edit POI</h4>
+                          <label>Name</label>
+                          <input
+                            className="input"
+                            value={selected.name}
+                            onChange={(e) => setSelected({ ...selected, name: e.target.value })}
+                          />
+                          <label>Description</label>
+                          <textarea
+                            className="textarea"
+                            value={selected.description || ""}
+                            onChange={(e) => setSelected({ ...selected, description: e.target.value })}
+                          />
+                          <label>Radius (m)</label>
+                          <input
+                            className="input"
+                            type="number"
+                            value={selected.radius_meters ?? 5}
+                            onChange={(e) => setSelected({ ...selected, radius_meters: Number(e.target.value) })}
+                          />
+                          <div className="editor-actions">
+                            <button className="btn primary" onClick={() => updatePoi(selected)}>
+                              Save
+                            </button>
+                            <button className="btn danger" onClick={() => deletePoi(selected)}>
+                              Disable
+                            </button>
+                            <button className="btn" onClick={() => setSelected(null)}>
+                              Close
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
-              {pois.length === 0 && <div className="empty">No POIs yet. Tap the map to add one.</div>}
-            </div>
+              );
+            })()}
 
-            {selected && (
-              <div className="editor">
-                <h4>Edit POI</h4>
-                <label>Name</label>
-                <input
-                  className="input"
-                  value={selected.name}
-                  onChange={(e) => setSelected({ ...selected, name: e.target.value })}
-                />
-                <label>Description</label>
-                <textarea
-                  className="textarea"
-                  value={selected.description || ""}
-                  onChange={(e) => setSelected({ ...selected, description: e.target.value })}
-                />
-                <label>Radius (m)</label>
-                <input
-                  className="input"
-                  type="number"
-                  value={selected.radius_meters ?? 5}
-                  onChange={(e) => setSelected({ ...selected, radius_meters: Number(e.target.value) })}
-                />
-                <div className="editor-actions">
-                  <button className="btn primary" onClick={() => updatePoi(selected)}>
-                    Save
-                  </button>
-                  <button className="btn danger" onClick={() => deletePoi(selected)}>
-                    Disable
-                  </button>
-                  <button className="btn" onClick={() => setSelected(null)}>
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
+           
+
           </div>
         </div>
       </IonContent>
