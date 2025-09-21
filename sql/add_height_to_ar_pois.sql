@@ -1,0 +1,2 @@
+ALTER TABLE public.ar_pois
+ADD COLUMN IF NOT EXISTS height int DEFAULT 1;

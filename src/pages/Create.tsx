@@ -20,9 +20,11 @@ type POI = {
   color?: string;
   group_name?: string;
   group_index?: number;
+  height?: number;
 };
 
 const Create: React.FC = () => {
+  const [openTab, setOpenTab] = useState<'pen' | 'pois' | null>(null);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [pois, setPois] = useState<POI[]>([]);
@@ -30,13 +32,17 @@ const Create: React.FC = () => {
   const mapLoadedRef = useRef(false);
 
   // Pen configuration UI state
-  const [penType, setPenType] = useState<string>("Point");
+  const [pen_type, setPen_type] = useState<string>("Point");
+  const [pen_height, setPen_height] = useState<number>(1);
   const [penColor, setPenColor] = useState<string>("#0b2e66");
   const [penRadius, setPenRadius] = useState<number>(5);
   const [singleName, setSingleName] = useState<string>("New POI");
   const [groupMode, setGroupMode] = useState<boolean>(false);
   const [groupBaseName, setGroupBaseName] = useState<string>("Pen");
   const [groupIndex, setGroupIndex] = useState<number>(1);
+
+  // Place Pen workflow state
+  const [canPlacePen, setCanPlacePen] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -50,8 +56,6 @@ const Create: React.FC = () => {
 
     const onMapLoad = () => {
       mapLoadedRef.current = true;
-
-      // 3D terrain and sky
       try {
         if (!map.getSource("mapbox-dem")) {
           map.addSource("mapbox-dem", {
@@ -73,7 +77,6 @@ const Create: React.FC = () => {
             },
           } as any);
         }
-        // 3D buildings
         const layers = map.getStyle().layers || [];
         const labelLayerId = layers.find((l: any) => l.type === "symbol" && l.layout && l.layout["text-field"])?.id;
         if (!map.getLayer("3d-buildings")) {
@@ -100,6 +103,7 @@ const Create: React.FC = () => {
       } catch {}
 
       map.on("click", async (e) => {
+        if (!canPlacePen) return;
         const lon = e.lngLat.lng;
         const lat = e.lngLat.lat;
         const name = groupMode
@@ -108,13 +112,24 @@ const Create: React.FC = () => {
         const radius = penRadius > 0 ? penRadius : 5;
 
         const { error } = await supabase.from("ar_pois").insert([
-          { name, description: "", latitude: lat, longitude: lon, radius_meters: radius },
+          {
+            name,
+            description: "",
+            latitude: lat,
+            longitude: lon,
+            radius_meters: radius,
+            pen_type,
+            color: penColor,
+            group_name: groupMode ? groupBaseName : null,
+            group_index: groupMode ? groupIndex : null,
+          },
         ]);
         if (error) {
           alert("Failed to save: " + error.message);
           return;
         }
         fetchPois();
+        setCanPlacePen(false);
         if (groupMode) setGroupIndex((i) => i + 1);
       });
 
@@ -127,7 +142,7 @@ const Create: React.FC = () => {
       map.off("load", onMapLoad);
       map.remove();
     };
-  }, []);
+  }, [canPlacePen, pen_type, penColor, penRadius, singleName, groupMode, groupBaseName, groupIndex]);
 
   async function fetchPois() {
     const { data, error } = await supabase
@@ -162,16 +177,35 @@ const Create: React.FC = () => {
     // We don't track markers, simple approach: rely on style reload; otherwise keep marker refs
     points.forEach((p) => {
       const el = document.createElement("div");
-      el.className = "poi-marker";
+      el.className = "poi-marker pin";
       el.title = p.name;
-      el.style.background = penColor;
-      el.style.width = `${(p.radius_meters || 5) * 2}px`;
-      el.style.height = `${(p.radius_meters || 5) * 2}px`;
-      el.innerHTML = `<span class="poi-label">${p.name}</span>`;
+      el.style.position = "relative";
+      el.style.width = "28px";
+      el.style.height = "40px";
+      el.style.background = "none";
+      el.innerHTML = `
+        <div class="pin-head" style="background:${p.color || penColor};"></div>
+        <div class="pin-tail"></div>
+        <div class="pin-hover" style="display:none;">
+          <div class="pin-label"><b>${p.name}</b></div>
+          <div class="pin-data">
+            Type: ${p.pen_type || "Point"}<br>
+            Radius: ${p.radius_meters || 5}m<br>
+            Height: ${p.height || 1}m<br>
+            Group: ${p.group_name || "-"} ${p.group_index || ""}
+          </div>
+        </div>
+      `;
       const marker = new mapboxgl.Marker(el).setLngLat([p.longitude, p.latitude]).addTo(map);
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
-        setSelected(p);
+        // Show hover popup
+        const hover = el.querySelector('.pin-hover');
+  if (hover) (hover as HTMLElement).style.display = 'block';
+      });
+      el.addEventListener("mouseleave", () => {
+        const hover = el.querySelector('.pin-hover');
+  if (hover) (hover as HTMLElement).style.display = 'none';
       });
 
       const id = `circle-${p.id}`;
@@ -249,171 +283,197 @@ const Create: React.FC = () => {
           <div className="side-panel">
             {/* Dropdown Create Pen */}
             {/* Combined dropdown container for Create Pen and POIs */}
-            {(() => {
-              const [openTab, setOpenTab] = React.useState<'pen' | 'pois' | null>(null);
-              return (
-                <div className="dropdown-combined-container">
-                  <button
-                    className="dropdown-toggle-btn"
-                    onClick={() => setOpenTab(openTab === 'pen' ? null : 'pen')}
-                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pen' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
-                  >
-                    {openTab === 'pen' ? "Hide Pen Creation" : "Create Pen"}
-                  </button>
-                  {openTab === 'pen' && (
-                    <form className="pen-config dropdown-fields" style={{ marginTop: 18 }}>
-                      <div className="row">
-                        <label>Type</label>
-                        <select className="input" value={penType} onChange={(e) => setPenType(e.target.value)}>
-                          <option>Point</option>
-                          <option>Beacon</option>
-                          <option>Zone</option>
-                        </select>
-                      </div>
-                      <div className="row">
-                        <label>Color</label>
-                        <input className="input" type="color" value={penColor} onChange={(e) => setPenColor(e.target.value)} />
-                      </div>
-                      <div className="row">
-                        <label>Radius (m)</label>
-                        <input className="input" type="number" min={1} value={penRadius} onChange={(e) => setPenRadius(Number(e.target.value))} />
-                      </div>
-                      <div className="row">
-                        <label>Mode</label>
-                        <div className="mode">
-                          <label className="chk"><input type="checkbox" checked={groupMode} onChange={(e) => setGroupMode(e.target.checked)} /> Group</label>
-                        </div>
-                      </div>
-                      {!groupMode && (
-                        <div className="row">
-                          <label>Name</label>
-                          <input className="input" value={singleName} onChange={(e) => setSingleName(e.target.value)} />
-                        </div>
-                      )}
-                      {groupMode && (
-                        <div className="row grid2">
-                          <div>
-                            <label>Group Name</label>
-                            <input className="input" value={groupBaseName} onChange={(e) => setGroupBaseName(e.target.value)} />
-                          </div>
-                          <div>
-                            <label>Next #</label>
-                            <input className="input" type="number" min={1} value={groupIndex} onChange={(e) => setGroupIndex(Number(e.target.value))} />
-                          </div>
-                        </div>
-                      )}
-                      <div className="hint">Tap the map to place the pen using these settings.</div>
-                      <div className="pen-preview">
-                        <div
-                          className="pen-preview-marker"
-                          style={{ background: penColor, width: penRadius * 2, height: penRadius * 2 }}
-                        />
-                        <span className="pen-preview-name">{groupMode ? `${groupBaseName} ${groupIndex}` : singleName}</span>
-                      </div>
-                    </form>
-                  )}
-                  <button
-                    className="dropdown-toggle-btn"
-                    onClick={() => setOpenTab(openTab === 'pois' ? null : 'pois')}
-                    style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pois' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
-                  >
-                    {openTab === 'pois' ? "Hide POIs" : "POIs"}
-                  </button>
-                  {openTab === 'pois' && (
-                    <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingBottom: 12 }}>
-                      <div className="poi-list" style={{ marginTop: 12 }}>
-                        {pois.map((p) => (
-                          <div key={p.id} className="poi-item">
-                            <div className="poi-meta">
-                              <strong>{p.name}</strong>
-                              <small>
-                                {p.latitude.toFixed(5)}, {p.longitude.toFixed(5)}
-                              </small>
-                            </div>
-                            <button className="btn" onClick={() => setSelected(p)}>
-                              Edit
-                            </button>
-                            <button className="btn view" onClick={() => {
-                              if (mapRef.current) {
-                                mapRef.current.flyTo({ center: [p.longitude, p.latitude], zoom: 18, speed: 1.2 });
-                              }
-                            }}>
-                              View
-                            </button>
-                          </div>
-                        ))}
-                        {pois.length === 0 && <div className="empty">No POIs yet. Tap the map to add one.</div>}
-                      </div>
-                      {selected && (
-                        <div className="editor" style={{ position: 'sticky', bottom: 0, background: '#fff', zIndex: 2, boxShadow: '0 -2px 8px rgba(11,46,236,0.08)', paddingBottom: 12 }}>
-                          <h4>Edit POI</h4>
-                          <label>Name</label>
-                          <input
-                            className="input"
-                            value={selected.name}
-                            onChange={(e) => setSelected({ ...selected, name: e.target.value })}
-                          />
-                          <label>Description</label>
-                          <textarea
-                            className="textarea"
-                            value={selected.description || ""}
-                            onChange={(e) => setSelected({ ...selected, description: e.target.value })}
-                          />
-                          <label>Radius (m)</label>
-                          <input
-                            className="input"
-                            type="number"
-                            value={selected.radius_meters ?? 5}
-                            onChange={(e) => setSelected({ ...selected, radius_meters: Number(e.target.value) })}
-                          />
-                          <label>Pen Type</label>
-                          <select
-                            className="input"
-                            value={selected.pen_type || 'Point'}
-                            onChange={(e) => setSelected({ ...selected, pen_type: e.target.value })}
-                          >
-                            <option value="Point">Point</option>
-                            <option value="Beacon">Beacon</option>
-                            <option value="Zone">Zone</option>
-                          </select>
-                          <label>Color</label>
-                          <input
-                            className="input"
-                            type="color"
-                            value={selected.color || '#0b2e66'}
-                            onChange={(e) => setSelected({ ...selected, color: e.target.value })}
-                          />
-                          <label>Group Name</label>
-                          <input
-                            className="input"
-                            value={selected.group_name || ''}
-                            onChange={(e) => setSelected({ ...selected, group_name: e.target.value })}
-                          />
-                          <label>Group Index</label>
-                          <input
-                            className="input"
-                            type="number"
-                            value={selected.group_index ?? ''}
-                            onChange={(e) => setSelected({ ...selected, group_index: Number(e.target.value) })}
-                          />
-                          <div className="editor-actions">
-                            <button className="btn primary" onClick={() => updatePoi(selected)}>
-                              Save
-                            </button>
-                            <button className="btn danger" onClick={() => deletePoi(selected)}>
-                              Disable
-                            </button>
-                            <button className="btn" onClick={() => setSelected(null)}>
-                              Close
-                            </button>
-                          </div>
-                        </div>
-                      )}
+            <div className="dropdown-combined-container">
+              <button
+                className="dropdown-toggle-btn"
+                onClick={() => setOpenTab(openTab === 'pen' ? null : 'pen')}
+                style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pen' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
+              >
+                {openTab === 'pen' ? "Hide Pen Creation" : "Create Pen"}
+              </button>
+              {openTab === 'pen' && (
+                <form className="pen-config dropdown-fields" style={{ marginTop: 18 }} onSubmit={e => {e.preventDefault();}}>
+                  <div className="row">
+                    <label>Type</label>
+                    <select className="input" value={pen_type} onChange={(e) => setPen_type(e.target.value)} required>
+                      <option value="">Select Type</option>
+                      <option value="Point">Point</option>
+                      <option value="Beacon">Beacon</option>
+                      <option value="Zone">Zone</option>
+                    </select>
+                  </div>
+                  <div className="row">
+                    <label>Height (m)</label>
+                    <input
+                      type="number"
+                      className="input"
+                      min={1}
+                      value={pen_height}
+                      onChange={e => setPen_height(Number(e.target.value))}
+                      placeholder="Pen Height (meters)"
+                      required
+                    />
+                  </div>
+                  <div className="row">
+                    <label>Color</label>
+                    <input className="input" type="color" value={penColor} onChange={(e) => setPenColor(e.target.value)} required />
+                  </div>
+                  <div className="row">
+                    <label>Radius (m)</label>
+                    <input className="input" type="number" min={1} value={penRadius} onChange={(e) => setPenRadius(Number(e.target.value))} required />
+                  </div>
+                  <div className="row">
+                    <label>Mode</label>
+                    <div className="mode">
+                      <label className="chk"><input type="checkbox" checked={groupMode} onChange={(e) => setGroupMode(e.target.checked)} /> Group</label>
+                    </div>
+                  </div>
+                  {!groupMode && (
+                    <div className="row">
+                      <label>Name</label>
+                      <input className="input" value={singleName} onChange={(e) => setSingleName(e.target.value)} required />
                     </div>
                   )}
+                  {groupMode && (
+                    <div className="row grid2">
+                      <div>
+                        <label>Group Name</label>
+                        <input className="input" value={groupBaseName} onChange={(e) => setGroupBaseName(e.target.value)} required />
+                      </div>
+                      <div>
+                        <label>Next #</label>
+                        <input className="input" type="number" min={1} value={groupIndex} onChange={(e) => setGroupIndex(Number(e.target.value))} required />
+                      </div>
+                    </div>
+                  )}
+                  <div className="hint">Fill out the pen info, then click <b>Place Pen</b> and tap the map to place it.</div>
+                  <div className="pen-preview">
+                    <div
+                      className="pen-preview-marker"
+                      style={{ background: penColor, width: penRadius * 2, height: penRadius * 2 }}
+                    />
+                    <span className="pen-preview-name">{groupMode ? `${groupBaseName} ${groupIndex}` : singleName}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn primary"
+                    style={{ marginTop: 12, width: '100%' }}
+                    disabled={
+                      !pen_type || !penColor || !penRadius || (!groupMode && !singleName) || (groupMode && (!groupBaseName || !groupIndex))
+                    }
+                    onClick={() => setCanPlacePen(true)}
+                  >
+                    Place Pen
+                  </button>
+                  {canPlacePen && <div className="hint" style={{color:'#007cf0',marginTop:8}}>Now tap the map to place your pen.</div>}
+                </form>
+              )}
+              <button
+                className="dropdown-toggle-btn"
+                onClick={() => setOpenTab(openTab === 'pois' ? null : 'pois')}
+                style={{ width: "100%", padding: "12px 0", fontWeight: 600, fontSize: "1.1rem", background: openTab === 'pois' ? "#0b2eec" : "#3a6bbf", color: "#fff", borderRadius: "12px", border: "none", boxShadow: "0 2px 8px rgba(11,46,236,0.10)", cursor: "pointer", marginBottom: 8 }}
+              >
+                {openTab === 'pois' ? "Hide POIs" : "POIs"}
+              </button>
+              {openTab === 'pois' && (
+                <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingBottom: 12 }}>
+                  <div className="poi-list" style={{ marginTop: 12 }}>
+                    {pois.map((p) => (
+                      <div key={p.id} className="poi-item">
+                        <div className="poi-meta">
+                          <strong>{p.name}</strong>
+                          <small>
+                            {p.latitude.toFixed(5)}, {p.longitude.toFixed(5)}
+                          </small>
+                        </div>
+                        <button className="btn" onClick={() => setSelected(p)}>
+                          Edit
+                        </button>
+                        <button className="btn view" onClick={() => {
+                          if (mapRef.current) {
+                            mapRef.current.flyTo({ center: [p.longitude, p.latitude], zoom: 18, speed: 1.2 });
+                          }
+                        }}>
+                          View
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              );
-            })()}
+              )}
+              {/* POI Editor Modal */}
+              {selected && (
+                <div className="poi-editor-modal">
+                  <input
+                    className="input"
+                    value={selected.name}
+                    onChange={(e) => setSelected({ ...selected, name: e.target.value } as POI)}
+                  />
+                  <label>Description</label>
+                  <textarea
+                    className="textarea"
+                    value={selected.description || ""}
+                    onChange={(e) => setSelected({ ...selected, description: e.target.value } as POI)}
+                  />
+                  <label>Radius (m)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    value={selected.radius_meters ?? 5}
+                    onChange={(e) => setSelected({ ...selected, radius_meters: Number(e.target.value) } as POI)}
+                  />
+                  <label>Pen Type</label>
+                  <select
+                    className="input"
+                    value={selected.pen_type || 'Point'}
+                    onChange={(e) => setSelected({ ...selected, pen_type: e.target.value } as POI)}
+                  >
+                    <option value="Point">Point</option>
+                    <option value="Beacon">Beacon</option>
+                    <option value="Zone">Zone</option>
+                  </select>
+                  <label>Height (m)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    value={selected.height ?? 1}
+                    onChange={(e) => setSelected({ ...selected, height: Number(e.target.value) } as POI)}
+                  />
+                  <label>Color</label>
+                  <input
+                    className="input"
+                    type="color"
+                    value={selected.color || '#0b2e66'}
+                    onChange={(e) => setSelected({ ...selected, color: e.target.value } as POI)}
+                  />
+                  <label>Group Name</label>
+                  <input
+                    className="input"
+                    value={selected.group_name || ''}
+                    onChange={(e) => setSelected({ ...selected, group_name: e.target.value } as POI)}
+                  />
+                  <label>Group Index</label>
+                  <input
+                    className="input"
+                    type="number"
+                    value={selected.group_index ?? ''}
+                    onChange={(e) => setSelected({ ...selected, group_index: Number(e.target.value) } as POI)}
+                  />
+                  <div className="editor-actions">
+                    <button className="btn primary" onClick={() => updatePoi(selected)}>
+                      Save
+                    </button>
+                    <button className="btn danger" onClick={() => deletePoi(selected)}>
+                      Disable
+                    </button>
+                    <button className="btn" onClick={() => setSelected(null)}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
            
 
