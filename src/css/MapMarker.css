@@ -1,22 +1,23 @@
 .map-layout {
-  display: relative;
-  height: 100%;  
+  position: relative; /* fix: should be position, not display */
+  height: 100%;
   width: 100%;
 }
 
 .map-wrapper {
- width: 100%;
+  width: 100%;
   height: 100%;
 }
 
 .map-container {
- width: 100%;
+  width: 100%;
   height: 100%;
 }
+
 .options-wrapper {
   position: absolute;
-  top: 69px;
-  right: 10px; 
+  top: 10px;
+  right: 10px;
   z-index: 10;
 }
 
@@ -28,23 +29,19 @@
   width: 220px;
 }
 
+/* --- Responsive Mobile View --- */
 @media (max-width: 768px) {
-  .map-layout {
-    flex-direction: column;
+  .options-wrapper {
+    top: auto;
+    bottom: 10px;   /* move to bottom */
+    right: 50%;
+    transform: translateX(50%); /* center horizontally */
+    width: 90%; /* take most of screen width */
   }
 
-  .map-wrapper {
-    flex: none;
-    height: 60%;  
-  }
-
-  .options-container {
-    flex: none;
-    height: 40%;
-  }
-
-  .container-options {
-    font-size: 16px;
-    padding: 10px;
+  .options-card {
+    width: 100%; /* expand on mobile */
+    border-radius: 16px;
+    padding: 12px;
   }
 }
