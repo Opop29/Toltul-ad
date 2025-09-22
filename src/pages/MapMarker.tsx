@@ -12,7 +12,10 @@ import {
   IonItem,
   IonLabel,
   IonToggle,
+  IonButton,
+  IonIcon,
 } from '@ionic/react';
+import { chevronForward, chevronBack } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
 import '../css/MapMarker.css';
 
@@ -24,6 +27,7 @@ const MapMarker: React.FC = () => {
 
   const [mapStyle, setMapStyle] = useState<string>('mapbox://styles/mapbox/streets-v11');
   const [is3D, setIs3D] = useState<boolean>(false);
+  const [showOptions, setShowOptions] = useState<boolean>(true);
 
   const [cameraState, setCameraState] = useState({
     center: [124.8681005804846, 8.360074137369724] as [number, number],
@@ -94,19 +98,19 @@ const MapMarker: React.FC = () => {
     if (!mapContainerRef.current) return;
 
     if (mapRef.current) {
-    try {
-      setCameraState({
-        center: mapRef.current.getCenter().toArray() as [number, number],
-        zoom: mapRef.current.getZoom(),
-        pitch: mapRef.current.getPitch(),
-        bearing: mapRef.current.getBearing(),
-      });
-      mapRef.current.remove();
-    } catch (err) {
-      console.warn("Map cleanup failed:", err);
+      try {
+        setCameraState({
+          center: mapRef.current.getCenter().toArray() as [number, number],
+          zoom: mapRef.current.getZoom(),
+          pitch: mapRef.current.getPitch(),
+          bearing: mapRef.current.getBearing(),
+        });
+        mapRef.current.remove();
+      } catch (err) {
+        console.warn("Map cleanup failed:", err);
+      }
+      mapRef.current = null;
     }
-    mapRef.current = null;
-  }
 
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -124,17 +128,17 @@ const MapMarker: React.FC = () => {
       if (is3D) enable3D();
     });
 
-     return () => {
-    if (mapRef.current) {
-      try {
-        mapRef.current.remove();
-      } catch (err) {
-        console.warn("Error while removing map:", err);
+    return () => {
+      if (mapRef.current) {
+        try {
+          mapRef.current.remove();
+        } catch (err) {
+          console.warn("Error while removing map:", err);
+        }
+        mapRef.current = null;
       }
-      mapRef.current = null;
-    }
-  };
-}, [mapStyle]);
+    };
+  }, [mapStyle]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -162,34 +166,46 @@ const MapMarker: React.FC = () => {
             <div ref={mapContainerRef} className="map-container"></div>
           </div>
 
-          <div className="options-wrapper">
-  <div className="options-card">
-    {/* Style Selector */}
-    <IonItem lines="none">
-      <IonLabel>Map Style</IonLabel>
-      <IonSelect
-        value={mapStyle}
-        placeholder="Select Map Layer"
-        onIonChange={(e) => setMapStyle(e.detail.value)}
-      >
-        {styles.map((style) => (
-          <IonSelectOption key={style.url} value={style.url}>
-            {style.label}
-          </IonSelectOption>
-        ))}
-      </IonSelect>
-    </IonItem>
+          {/* Slide Options Container */}
+          <div className={`options-wrapper ${showOptions ? "open" : "closed"}`}>
+            <div className="options-card">
+              {/* Slide toggle button inside */}
+              <IonButton
+                className="slide-toggle-btn"
+                onClick={() => setShowOptions(!showOptions)}
+                fill="clear"
+              >
+                <IonIcon icon={showOptions ? chevronForward : chevronBack} />
+              </IonButton>
 
-    {/* 3D Toggle */}
-    <IonItem lines="none">
-      <IonLabel>Enable 3D</IonLabel>
-      <IonToggle
-        checked={is3D}
-        onIonChange={(e) => setIs3D(e.detail.checked)}
-      />
-    </IonItem>
-  </div>
-</div>
+              {showOptions && (
+                <>
+                  <IonItem lines="none">
+                    <IonLabel>Map Style</IonLabel>
+                    <IonSelect
+                      value={mapStyle}
+                      placeholder="Select Map Layer"
+                      onIonChange={(e) => setMapStyle(e.detail.value)}
+                    >
+                      {styles.map((style) => (
+                        <IonSelectOption key={style.url} value={style.url}>
+                          {style.label}
+                        </IonSelectOption>
+                      ))}
+                    </IonSelect>
+                  </IonItem>
+
+                  <IonItem lines="none">
+                    <IonLabel>Enable 3D</IonLabel>
+                    <IonToggle
+                      checked={is3D}
+                      onIonChange={(e) => setIs3D(e.detail.checked)}
+                    />
+                  </IonItem>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </IonContent>
     </IonPage>
