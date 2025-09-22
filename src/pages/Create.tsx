@@ -4,7 +4,6 @@ import mapboxgl from "mapbox-gl";
 import { supabase } from "../utils/supabaseClient";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "../css/Create.css";
-import pinIcon from "../assets/3d-pin.svg";
 
 mapboxgl.accessToken = (import.meta.env.VITE_MAPBOX_TOKEN as string) ||
   "pk.eyJ1Ijoib3BvcDI5IiwiYSI6ImNtZm8za3Q1NjAxcTEyanF4ZjZraWowdjEifQ.jNxrXsiX7Davmhjmp4ihWw";
@@ -160,21 +159,15 @@ const Create: React.FC = () => {
         } catch {}
       });
 
-    // We don't track markers, simple approach: rely on style reload; otherwise keep marker refs
+   
     points.forEach((p) => {
       const el = document.createElement("div");
       el.className = "poi-marker";
       el.title = p.name;
-      
-      // Create a 3D pin marker using the SVG
-      const img = document.createElement("img");
-      img.src = pinIcon;
-      img.style.width = `${(p.radius_meters || 5) * 5}px`;
-      img.style.height = `${(p.radius_meters || 5) * 7.5}px`;
-      
-      el.appendChild(img);
-      el.innerHTML += `<span class="poi-label">${p.name}</span>`;
-      
+      el.style.background = penColor;
+      el.style.width = `${(p.radius_meters || 5) * 2}px`;
+      el.style.height = `${(p.radius_meters || 5) * 2}px`;
+      el.innerHTML = `<span class="poi-label">${p.name}</span>`;
       const marker = new mapboxgl.Marker(el).setLngLat([p.longitude, p.latitude]).addTo(map);
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();

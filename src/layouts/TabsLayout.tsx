@@ -10,7 +10,7 @@ import {
 } from "@ionic/react";
 import { homeOutline, addCircleOutline, constructOutline, barChartOutline } from "ionicons/icons";
 import Home from "../pages/Home";
-import Create from "../pages/Create";
+import MapMarker from "../pages/MapMarker";
 import Builded from "../pages/Builded";
 import Report from "../pages/Report";
 import "../css/Tabs.css";
@@ -26,7 +26,7 @@ const TabsLayout: React.FC = () => {
           <Redirect to="/Toltul-ad/home" />
         </Route>
         <Route exact path="/Toltul-ad/home" component={Home} />
-        <Route exact path="/Toltul-ad/create" component={Create} />
+        <Route exact path="/Toltul-ad/MapMarker" component={MapMarker} />
         <Route exact path="/Toltul-ad/builded" component={Builded} />
         <Route exact path="/Toltul-ad/report" component={Report} />
         <Route exact path="/Toltul-ad/tabs">
@@ -40,9 +40,9 @@ const TabsLayout: React.FC = () => {
           <IonLabel>Home</IonLabel>
           <span className="tab-indicator" />
         </IonTabButton>
-        <IonTabButton tab="create" href="/Toltul-ad/create" className="tab-btn">
+        <IonTabButton tab="create" href="/Toltul-ad/MapMarker" className="tab-btn">
           <IonIcon icon={addCircleOutline} />
-          <IonLabel>Create</IonLabel>
+          <IonLabel>MapMarker</IonLabel>
           <span className="tab-indicator" />
         </IonTabButton>
         <IonTabButton tab="builded" href="/Toltul-ad/builded" className="tab-btn">

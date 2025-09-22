@@ -55,9 +55,9 @@ const AppMenu: React.FC = () => {
             <IonIcon slot="start" icon={homeOutline} />
             <IonLabel>Home</IonLabel>
           </IonItem>
-          <IonItem routerLink="/Toltul-ad/create" button detail={false} lines="full" className="menu-item">
+          <IonItem routerLink="/Toltul-ad/MapMarker" button detail={false} lines="full" className="menu-item">
             <IonIcon slot="start" icon={addCircleOutline} />
-            <IonLabel>Create</IonLabel>
+            <IonLabel>MapMarker</IonLabel>
           </IonItem>
           <IonItem routerLink="/Toltul-ad/builded" button detail={false} lines="full" className="menu-item">
             <IonIcon slot="start" icon={constructOutline} />

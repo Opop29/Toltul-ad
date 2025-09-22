@@ -146,6 +146,19 @@
   transform: translate(-50%, -100%);
 }
 
+.poi-label {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  color: #0b2e66;
+  z-index: 1;
+}
+
 /* Pen config */
 .pen-config { border: 1px solid rgba(11,46,102,0.12); border-radius: 10px; padding: 8px; background: #ffffff; }
 .pen-config .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
