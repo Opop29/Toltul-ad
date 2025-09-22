@@ -29,12 +29,9 @@ const MapMarker: React.FC = () => {
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    new mapboxgl.Marker({ color: 'red' })
-      .setLngLat([124.747, 8.376]) 
-      .setPopup(new mapboxgl.Popup().setHTML('<h4>Hello Mapbox!</h4>'))
-      .addTo(mapRef.current);
+    
 
-    return () => {
+    return () => {  
       mapRef.current?.remove();
     };
   }, []);
@@ -50,13 +47,14 @@ const MapMarker: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      {/* Main Content */}
       <IonContent>
         <div className="map-layout">
-          {/* Map Area */}
-          <div ref={mapContainerRef} className="map-container"></div>
+          {/* Map Full Container */}
+          <div className="map-wrapper">
+            <div ref={mapContainerRef} className="map-container"></div>
+          </div>
 
-          {/* Container Options */}
+          {/* Options Panel */}
           <div className="options-container">
             <div className="container-options">container options</div>
           </div>
