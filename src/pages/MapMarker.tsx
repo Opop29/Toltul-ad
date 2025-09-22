@@ -71,8 +71,23 @@ const MapMarker: React.FC = () => {
       });
     }
 
-    mapRef.current.setPitch(60);
-    mapRef.current.setBearing(-20);
+    mapRef.current.flyTo({
+      pitch: 60,
+      bearing: -20,
+      duration: 2000,
+      essential: true,
+    });
+  };
+
+  const disable3D = () => {
+    if (!mapRef.current) return;
+
+    mapRef.current.flyTo({
+      pitch: 0,
+      bearing: 0,
+      duration: 2000,
+      essential: true,
+    });
   };
 
   useEffect(() => {
@@ -86,6 +101,7 @@ const MapMarker: React.FC = () => {
         bearing: mapRef.current.getBearing(),
       });
       mapRef.current.remove();
+         mapRef.current = null;
     }
 
     mapRef.current = new mapboxgl.Map({
@@ -93,8 +109,8 @@ const MapMarker: React.FC = () => {
       style: mapStyle,
       center: cameraState.center,
       zoom: cameraState.zoom,
-      pitch: is3D ? 60 : cameraState.pitch,
-      bearing: is3D ? -20 : cameraState.bearing,
+      pitch: cameraState.pitch,
+      bearing: cameraState.bearing,
     });
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -105,9 +121,21 @@ const MapMarker: React.FC = () => {
     });
 
     return () => {
-      mapRef.current?.remove();
-    };
-  }, [mapStyle, is3D]);
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+  };
+}, [mapStyle]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (is3D) {
+      enable3D();
+    } else {
+      disable3D();
+    }
+  }, [is3D]);
 
   return (
     <IonPage>
