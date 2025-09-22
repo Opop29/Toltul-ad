@@ -94,6 +94,7 @@ const MapMarker: React.FC = () => {
     if (!mapContainerRef.current) return;
 
     if (mapRef.current) {
+    try {
       setCameraState({
         center: mapRef.current.getCenter().toArray() as [number, number],
         zoom: mapRef.current.getZoom(),
@@ -101,8 +102,11 @@ const MapMarker: React.FC = () => {
         bearing: mapRef.current.getBearing(),
       });
       mapRef.current.remove();
-         mapRef.current = null;
+    } catch (err) {
+      console.warn("Map cleanup failed:", err);
     }
+    mapRef.current = null;
+  }
 
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -120,9 +124,13 @@ const MapMarker: React.FC = () => {
       if (is3D) enable3D();
     });
 
-    return () => {
+     return () => {
     if (mapRef.current) {
-      mapRef.current.remove();
+      try {
+        mapRef.current.remove();
+      } catch (err) {
+        console.warn("Error while removing map:", err);
+      }
       mapRef.current = null;
     }
   };
@@ -154,31 +162,34 @@ const MapMarker: React.FC = () => {
             <div ref={mapContainerRef} className="map-container"></div>
           </div>
 
-          <div className="options-container">
-            <div className="container-options">
-              {/* Style Selector */}
-              <IonSelect
-                value={mapStyle}
-                placeholder="Select Map Layer"
-                onIonChange={(e) => setMapStyle(e.detail.value)}
-              >
-                {styles.map((style) => (
-                  <IonSelectOption key={style.url} value={style.url}>
-                    {style.label}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
+          <div className="options-wrapper">
+  <div className="options-card">
+    {/* Style Selector */}
+    <IonItem lines="none">
+      <IonLabel>Map Style</IonLabel>
+      <IonSelect
+        value={mapStyle}
+        placeholder="Select Map Layer"
+        onIonChange={(e) => setMapStyle(e.detail.value)}
+      >
+        {styles.map((style) => (
+          <IonSelectOption key={style.url} value={style.url}>
+            {style.label}
+          </IonSelectOption>
+        ))}
+      </IonSelect>
+    </IonItem>
 
-              {/* 3D Toggle */}
-              <IonItem lines="none">
-                <IonLabel>Enable 3D</IonLabel>
-                <IonToggle
-                  checked={is3D}
-                  onIonChange={(e) => setIs3D(e.detail.checked)}
-                />
-              </IonItem>
-            </div>
-          </div>
+    {/* 3D Toggle */}
+    <IonItem lines="none">
+      <IonLabel>Enable 3D</IonLabel>
+      <IonToggle
+        checked={is3D}
+        onIonChange={(e) => setIs3D(e.detail.checked)}
+      />
+    </IonItem>
+  </div>
+</div>
         </div>
       </IonContent>
     </IonPage>
