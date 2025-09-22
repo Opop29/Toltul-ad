@@ -1,24 +1,37 @@
 .map-layout {
   display: flex;
-  height: 100%;
+  height: 100%;   /* take full height inside IonContent */
   width: 100%;
+}
+
+.map-wrapper {
+  flex: 3;
+  height: 100%;   /* ensure full height */
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .map-container {
-  flex: 3;
-  height: 100%;
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;   /* force full height */
+  width: 100%;    /* force full width */
 }
 
+/* Options panel */
 .options-container {
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;   /* match map height */
 }
 
 .container-options {
-  padding: 15px;
   height: 100%;
+  width: 100%;
+  padding: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,21 +40,20 @@
   border-left: 1px solid #ccc;
 }
 
+/* 📱 Mobile Responsive */
 @media (max-width: 768px) {
   .map-layout {
     flex-direction: column;
   }
 
-  .map-container {
+  .map-wrapper {
     flex: none;
-    height: 60%; 
-    border-right: none;
-    border-bottom: 1px solid #ccc;
+    height: 60%;  /* take 60% of screen */
   }
 
   .options-container {
     flex: none;
-    height: 40%; 
+    height: 40%;
   }
 
   .container-options {

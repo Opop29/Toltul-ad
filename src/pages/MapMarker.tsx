@@ -29,7 +29,9 @@ const MapMarker: React.FC = () => {
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    
+     mapRef.current.on('load', () => {
+    mapRef.current?.resize();
+  });
 
     return () => {  
       mapRef.current?.remove();
@@ -47,19 +49,18 @@ const MapMarker: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
-        <div className="map-layout">
-          {/* Map Full Container */}
-          <div className="map-wrapper">
-            <div ref={mapContainerRef} className="map-container"></div>
-          </div>
+    <IonContent fullscreen scrollY={false}>
+  <div className="map-layout">
+    <div className="map-wrapper">
+      <div ref={mapContainerRef} className="map-container"></div>
+    </div>
 
-          {/* Options Panel */}
-          <div className="options-container">
-            <div className="container-options">container options</div>
-          </div>
-        </div>
-      </IonContent>
+    <div className="options-container">
+      <div className="container-options">container options</div>
+    </div>
+  </div>
+</IonContent>
+
     </IonPage>
   );
 };
