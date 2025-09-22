@@ -8,9 +8,22 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [
     react(),
-    legacy()
+    legacy({
+      // ✅ Use proper Browserslist queries
+      targets: [
+        'defaults',
+        'chrome >= 89',
+        'edge >= 89',
+        'firefox >= 83',
+        'safari >= 13'
+      ]
+    })
   ],
-   base :"Toltul-ad",
+  base: "/Toltul-ad/",   // ✅ add leading and trailing slash
+  build: {
+    target: 'es2022',            // ✅ allows bigint literals
+    chunkSizeWarningLimit: 1000  // optional: silence large bundle warnings
+  },
   test: {
     globals: true,
     environment: 'jsdom',
