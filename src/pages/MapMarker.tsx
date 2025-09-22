@@ -21,8 +21,16 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 const MapMarker: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+
   const [mapStyle, setMapStyle] = useState<string>('mapbox://styles/mapbox/streets-v11');
   const [is3D, setIs3D] = useState<boolean>(false);
+
+  const [cameraState, setCameraState] = useState({
+    center: [124.8681005804846, 8.360074137369724] as [number, number],
+    zoom: 16,
+    pitch: 0,
+    bearing: 0,
+  });
 
   const styles = [
     { label: 'Streets', url: 'mapbox://styles/mapbox/streets-v11' },
@@ -36,40 +44,57 @@ const MapMarker: React.FC = () => {
   const enable3D = () => {
     if (!mapRef.current) return;
 
-    mapRef.current.addSource('mapbox-dem', {
-      type: 'raster-dem',
-      url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-      tileSize: 512,
-      maxzoom: 14,
-    });
-    mapRef.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+    if (!mapRef.current.getSource('mapbox-dem')) {
+      mapRef.current.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512,
+        maxzoom: 14,
+      });
+      mapRef.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+    }
 
-    mapRef.current.addLayer({
-      id: '3d-buildings',
-      source: 'composite',
-      'source-layer': 'building',
-      filter: ['==', 'extrude', 'true'],
-      type: 'fill-extrusion',
-      minzoom: 15,
-      paint: {
-        'fill-extrusion-color': '#aaa',
-        'fill-extrusion-height': ['get', 'height'],
-        'fill-extrusion-base': ['get', 'min_height'],
-        'fill-extrusion-opacity': 0.6,
-      },
-    });
+    if (!mapRef.current.getLayer('3d-buildings')) {
+      mapRef.current.addLayer({
+        id: '3d-buildings',
+        source: 'composite',
+        'source-layer': 'building',
+        filter: ['==', 'extrude', 'true'],
+        type: 'fill-extrusion',
+        minzoom: 15,
+        paint: {
+          'fill-extrusion-color': '#aaa',
+          'fill-extrusion-height': ['get', 'height'],
+          'fill-extrusion-base': ['get', 'min_height'],
+          'fill-extrusion-opacity': 0.6,
+        },
+      });
+    }
+
+    mapRef.current.setPitch(60);
+    mapRef.current.setBearing(-20);
   };
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
+    if (mapRef.current) {
+      setCameraState({
+        center: mapRef.current.getCenter().toArray() as [number, number],
+        zoom: mapRef.current.getZoom(),
+        pitch: mapRef.current.getPitch(),
+        bearing: mapRef.current.getBearing(),
+      });
+      mapRef.current.remove();
+    }
+
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: mapStyle,
-      center: [124.8681005804846, 8.360074137369724],
-      zoom: 16,
-      pitch: is3D ? 60 : 0, 
-      bearing: is3D ? -20 : 0,
+      center: cameraState.center,
+      zoom: cameraState.zoom,
+      pitch: is3D ? 60 : cameraState.pitch,
+      bearing: is3D ? -20 : cameraState.bearing,
     });
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -82,7 +107,7 @@ const MapMarker: React.FC = () => {
     return () => {
       mapRef.current?.remove();
     };
-  }, [mapStyle, is3D]); 
+  }, [mapStyle, is3D]);
 
   return (
     <IonPage>
@@ -103,7 +128,7 @@ const MapMarker: React.FC = () => {
 
           <div className="options-container">
             <div className="container-options">
-              {/* Map Style Selector */}
+              {/* Style Selector */}
               <IonSelect
                 value={mapStyle}
                 placeholder="Select Map Layer"
