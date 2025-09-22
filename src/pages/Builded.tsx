@@ -22,6 +22,8 @@ type POI = {
 const Builded: React.FC = () => {
   const [pois, setPois] = useState<POI[]>([]);
   const [selected, setSelected] = useState<POI | null>(null);
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     fetchPois();
@@ -40,19 +42,25 @@ const Builded: React.FC = () => {
   }
 
   async function updatePoi(p: POI) {
-    if (!p.id) return;
-    await supabase
-      .from("ar_pois")
-      .update({
-        name: p.name,
-        description: p.description,
-        radius_meters: p.radius_meters,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", p.id);
-    fetchPois();
-    setSelected(null);
-  }
+  if (!p.id) return;
+  await supabase
+    .from("ar_pois")
+    .update({
+      name: p.name,
+      description: p.description,
+      radius_meters: p.radius_meters,
+      pen_type: p.pen_type,
+      height: p.height,
+      color: p.color,
+      group_name: p.group_name,
+      group_index: p.group_index,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", p.id);
+
+  fetchPois();
+  setSelected(null);
+}
 
   async function setCoords(p: POI) {
     if (!p.id) return;
@@ -67,14 +75,53 @@ const Builded: React.FC = () => {
   }
 
   async function deletePoi(p: POI) {
-    if (!p.id) return;
-    await supabase
-      .from("ar_pois")
-      .update({ is_active: false })
-      .eq("id", p.id);
-    fetchPois();
-    setSelected(null);
-  }
+  if (!p.id) return;
+  await supabase
+    .from("ar_pois")
+    .delete()
+    .eq("id", p.id);
+  fetchPois();
+  setSelected(null);
+}
+
+
+  // Select all checkbox handler
+  useEffect(() => {
+    if (selectAll) {
+      setCheckedIds(pois.map(p => p.id ?? ""));
+    } else {
+      setCheckedIds([]);
+    }
+  }, [selectAll, pois]);
+
+  // Individual checkbox handler
+  const handleCheck = (id: string) => {
+    setCheckedIds(prev => prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]);
+  };
+
+ async function deleteSelected() {
+  if (checkedIds.length === 0) return;
+  await supabase
+    .from("ar_pois")
+    .delete()
+    .in("id", checkedIds);
+  fetchPois();
+  setCheckedIds([]);
+  setSelectAll(false);
+}
+
+
+async function deleteAll() {
+  if (pois.length === 0) return;
+  await supabase
+    .from("ar_pois")
+    .delete()
+    .in("id", pois.map(p => p.id ?? ""));
+  fetchPois();
+  setCheckedIds([]);
+  setSelectAll(false);
+}
+
 
   return (
     <IonPage>
@@ -90,9 +137,15 @@ const Builded: React.FC = () => {
         <div className="builded-wrap">
           <div className="builded-card">
             <h3>All Saved Pens</h3>
+            <div style={{display:'flex',gap:8,marginBottom:12}}>
+              <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
+              <button className="btn danger" onClick={deleteAll}>Delete All</button>
+              <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
+            </div>
             <div className="poi-list">
               {pois.map((p) => (
                 <div key={p.id} className="poi-item">
+                  <input type="checkbox" checked={checkedIds.includes(p.id ?? "")} onChange={() => handleCheck(p.id ?? "")} style={{marginRight:8}} />
                   <div className="poi-meta">
                     <span className="poi-name">{p.name}</span>
                     <span className="poi-coords">{p.latitude.toFixed(5)}, {p.longitude.toFixed(5)}</span>

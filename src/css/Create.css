@@ -1,3 +1,69 @@
+/* Remove invalid blocks above. Use only valid selectors below. */
+/* Layout improvements for base structure */
+.create-wrap {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 56px - 48px); 
+  background: linear-gradient(180deg, #e6f0ff 0%, #ffffff 100%);
+  box-sizing: border-box;
+  min-width: 0;
+}
+.map-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-right: 1.5px solid #e3eaf7;
+  background: #f8fbff;
+  box-shadow: 0 2px 12px rgba(11,46,102,0.06);
+  display: flex;
+  flex-direction: column;
+}
+.side-panel {
+  width: 340px;
+  max-width: 40vw;
+  background: #ffffff;
+  border-left: 1.5px solid #e3eaf7;
+  padding: 18px 16px 0 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 12px rgba(11,46,102,0.06);
+}
+.panel-title {
+  margin: 0 0 12px 0;
+  color: #0b2e66;
+  font-size: 1.3em;
+  font-weight: 700;
+}
+.navigation-tabs {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 48px;
+  background: #f8fbff;
+  border-top: 1.5px solid #e3eaf7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  box-shadow: 0 -2px 12px rgba(11,46,102,0.06);
+}
+.navigation-tabs .tab {
+  border-radius: 8px 8px 0 0;
+  margin: 0 4px;
+  transition: background 0.18s, color 0.18s;
+}
+.navigation-tabs .tab:hover {
+  background: #e3eaf7;
+  color: #1976d2;
+}
+.navigation-tabs .tab.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 700;
+  border-radius: 8px 8px 0 0;
+}
 .create-wrap {
   display: flex;
   height: 100%;
@@ -32,18 +98,12 @@
   background: #f8fbff;
 }
 
-.poi-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px;
-  border-bottom: 1px dashed rgba(11,46,102,0.12);
+/* Header improvements */
+.ion-header, .ion-toolbar, .ion-title {
+  background: #f8fbff;
+  box-shadow: 0 2px 12px rgba(11,46,102,0.08);
+  border-bottom: 1.5px solid #e3eaf7;
 }
-
-.poi-item:last-child { border-bottom: none; }
-
-.poi-meta small { color: #3a6bbf; display: block; }
-
 .editor {
   margin-top: 12px;
   padding-top: 12px;
@@ -77,12 +137,13 @@
 .empty { color: #3a6bbf; padding: 8px; text-align: center; }
 
 .poi-marker {
-  width: 24px;
-  height: 24px;
-  background: #ffffff;
-  border: 2px solid #0b2e66;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(0,0,0,0.22);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -100%);
 }
 
 /* Pen config */
@@ -228,6 +289,54 @@
   .create-wrap { flex-direction: column; }
   .side-panel { width: 100%; max-width: none; border-left: none; border-top: 1px solid rgba(11,46,102,0.12); }
   .poi-list { max-height: 30vh; }
+}/* Wrapper that holds both pin + shadow */
+.pin3d-wrap {
+  position: relative;
+  width: 40px;
+  height: 60px;
+  transform: translate(-50%, -100%);
+  pointer-events: auto; /* keep it clickable */
 }
+
+/* 3D pin body */
+.pin3d-wrap::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  background: var(--pin-color, #e74c3c);
+  border-radius: 50% 50% 50% 0;
+  transform: translateX(-50%) rotate(-45deg);
+  box-shadow: -3px 3px 6px rgba(0,0,0,0.35);
+}
+
+/* White highlight inside */
+.pin3d-wrap::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* Separate shadow ellipse under pin */
+.pin-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 26px;
+  height: 8px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  filter: blur(1px);
+}
+
 
 
