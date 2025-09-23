@@ -455,14 +455,58 @@ async function deleteAll() {
                         <p><strong>Markers in Group:</strong> {selected.markers.length}</p>
                       </div>
                       <div style={{marginBottom: 16}}>
-                        <h4>All Markers in this Group:</h4>
-                        {selected.markers.map((marker, index) => (
-                          <div key={marker.id} style={{padding: '12px', background: 'rgba(0, 124, 240, 0.02)', borderRadius: '8px', marginBottom: '8px'}}>
-                            <p><strong>Label:</strong> {marker.label}</p>
-                            <p><strong>Coordinates:</strong> {marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p>
-                            <p><strong>Height:</strong> {marker.height}m</p>
-                          </div>
-                        ))}
+                        <h4 style={{marginBottom: '16px', color: '#1a365d', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px'}}>All Markers in this Group:</h4>
+                        <div style={{display: 'grid', gap: '12px'}}>
+                          {selected.markers.map((marker, index) => (
+                            <div key={marker.id} style={{
+                              padding: '16px',
+                              background: 'linear-gradient(135deg, rgba(0, 124, 240, 0.05) 0%, rgba(0, 124, 240, 0.02) 100%)',
+                              borderRadius: '12px',
+                              border: '1px solid rgba(0, 124, 240, 0.1)',
+                              boxShadow: '0 2px 8px rgba(0, 124, 240, 0.08)',
+                              position: 'relative'
+                            }}>
+                              <div style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                backgroundColor: selected.color,
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                              }}>
+                                {index + 1}
+                              </div>
+                              <div style={{marginBottom: '12px'}}>
+                                <h5 style={{margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.1rem'}}>{marker.label}</h5>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                  <span style={{
+                                    backgroundColor: selected.color,
+                                    width: '12px',
+                                    height: '12px',
+                                    borderRadius: '50%',
+                                    display: 'inline-block'
+                                  }}></span>
+                                  <span style={{fontSize: '0.9rem', color: '#4a5568'}}>{selected.mark_type}</span>
+                                </div>
+                              </div>
+                              <div style={{fontSize: '0.9rem', color: '#718096'}}>
+                                <div style={{marginBottom: '4px'}}>
+                                  <strong>📍 Coordinates:</strong> {marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}
+                                </div>
+                                <div>
+                                  <strong>📏 Height:</strong> {marker.height}m
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                       <div style={{marginTop:12}}>
                         <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit Group</button>
@@ -478,6 +522,25 @@ async function deleteAll() {
                         <p><strong>Label:</strong> {selected.label}</p>
                         <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
                         <p><strong>Height:</strong> {selected.height}m</p>
+                        {selected.group_name && (() => {
+                          // Find the group this marker belongs to and count markers
+                          const group = getFilteredPois().find(item =>
+                            'isGroup' in item && item.markers.some(m => m.id === selected.id)
+                          ) as GroupItem;
+                          return group ? (
+                            <div style={{
+                              marginTop: '12px',
+                              padding: '8px 12px',
+                              background: 'rgba(255, 193, 7, 0.1)',
+                              borderRadius: '8px',
+                              border: '1px solid rgba(255, 193, 7, 0.3)'
+                            }}>
+                              <p style={{margin: 0, fontSize: '0.9rem', color: '#856404'}}>
+                                <strong>📊 Group Info:</strong> Part of "{group.group_name}" group with {group.markers.length} total markers
+                              </p>
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                       <div style={{marginTop:12}}>
                         <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit</button>
