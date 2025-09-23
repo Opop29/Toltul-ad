@@ -166,8 +166,18 @@ const Home: React.FC = () => {
           <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
 
           <div className="home-hero">
-            <h1 className="home-title">🏛️ Toltul AR Dashboard</h1>
-            <p className="home-subtitle">Welcome back! Manage your AR markers and explore campus locations</p>
+            <div className="hero-logo">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
+            </div>
+            <h1 className="home-title">
+              <span className="title-main">🏛️ Toltul</span>
+              <span className="title-accent">-AD</span>
+            </h1>
+            <div className="hero-taglines">
+              <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
+              <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
+              <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
+            </div>
           </div>
 
           {/* Key Stats Cards */}
@@ -230,6 +240,33 @@ const Home: React.FC = () => {
               </IonCol>
             </IonRow>
           </IonGrid>
+
+          {/* Map Display Section */}
+          <div className="home-section">
+            <div className="map-display-container">
+              <div className="map-display">
+                <div className="map-overlay">
+                  <div className="map-title">Interactive Campus Map</div>
+                  <div className="map-subtitle">Explore AR markers across the university</div>
+                </div>
+                <div className="map-grid">
+                  <div className="grid-line horizontal"></div>
+                  <div className="grid-line horizontal"></div>
+                  <div className="grid-line horizontal"></div>
+                  <div className="grid-line vertical"></div>
+                  <div className="grid-line vertical"></div>
+                  <div className="grid-line vertical"></div>
+                </div>
+                <div className="map-markers">
+                  <div className="map-marker-pulse" style={{top: '30%', left: '25%', animationDelay: '0s'}}></div>
+                  <div className="map-marker-pulse" style={{top: '45%', left: '60%', animationDelay: '1s'}}></div>
+                  <div className="map-marker-pulse" style={{top: '65%', left: '40%', animationDelay: '2s'}}></div>
+                  <div className="map-marker-pulse" style={{top: '25%', left: '70%', animationDelay: '0.5s'}}></div>
+                  <div className="map-marker-pulse" style={{top: '75%', left: '80%', animationDelay: '1.5s'}}></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Quick Actions Section */}
           <div className="home-section">
