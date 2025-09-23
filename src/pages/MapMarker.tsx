@@ -281,21 +281,13 @@ const MapMarker: React.FC = () => {
        marker.lat.toString().includes(query) ||
        marker.lng.toString().includes(query);
 
-     const isPermanent = !marker.dates || marker.dates.length === 0;
      const isGroup = !!marker.group_name;
-     const isDated = marker.dates && marker.dates.length > 0;
+     const isDated = marker.dates && marker.dates.length > 0 && !isGroup;
+     const isPermanent = !marker.dates || marker.dates.length === 0 && !isGroup;
 
-     const categories = [];
-     if (isPermanent) categories.push('permanent');
-     if (isGroup) categories.push('group');
-     if (isDated) categories.push('dated');
-
-     const matchesCategory = categories.every(cat => {
-       if (cat === 'permanent') return showPermanentMarks;
-       if (cat === 'group') return showGroupMarks;
-       if (cat === 'dated') return showDatedMarks;
-       return false;
-     });
+     const matchesCategory = (showGroupMarks && isGroup) ||
+                             (showDatedMarks && isDated) ||
+                             (showPermanentMarks && isPermanent);
 
      return matchesType && matchesSearch && matchesCategory;
    });

@@ -20,7 +20,8 @@
   left: 10px;
   z-index: 10;
   transition: opacity 0.3s ease-in-out;
-  max-height: 80vh;
+  max-height: 450px;
+  border-radius: 4%;
   overflow-y: auto;
 }
 

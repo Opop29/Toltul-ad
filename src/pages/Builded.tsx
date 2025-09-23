@@ -192,21 +192,13 @@ async function deleteAll() {
 
 const getFilteredPois = () => {
   return pois.filter(poi => {
-    const isPermanent = !poi.dates || poi.dates.length === 0;
     const isGroup = !!poi.group_name;
-    const isDated = poi.dates && poi.dates.length > 0;
+    const isDated = poi.dates && poi.dates.length > 0 && !isGroup;
+    const isPermanent = !poi.dates || poi.dates.length === 0 && !isGroup;
 
-    const categories = [];
-    if (isPermanent) categories.push('permanent');
-    if (isGroup) categories.push('group');
-    if (isDated) categories.push('dated');
-
-    const matchesCategory = categories.every(cat => {
-      if (cat === 'permanent') return showPermanentMarks;
-      if (cat === 'group') return showGroupMarks;
-      if (cat === 'dated') return showDatedMarks;
-      return false;
-    });
+    const matchesCategory = (showGroupMarks && isGroup) ||
+                            (showDatedMarks && isDated) ||
+                            (showPermanentMarks && isPermanent);
 
     return matchesCategory;
   });
