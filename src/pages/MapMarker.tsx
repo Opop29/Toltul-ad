@@ -27,6 +27,19 @@ import '../css/MapMarker.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
+type POI = {
+  id?: number;
+  lat: number;
+  lng: number;
+  label: string;
+  mark_type: string;
+  color: string;
+  height: number;
+  dates?: string[];
+  group_name?: string;
+  group_index?: number;
+};
+
 const MapMarker: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -49,6 +62,11 @@ const MapMarker: React.FC = () => {
   const [selectedViewType, setSelectedViewType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
+  const [groupName, setGroupName] = useState<string>('');
+  const [groupColor, setGroupColor] = useState<string>('#007cf0');
+  const [groupMarkers, setGroupMarkers] = useState<any[]>([]);
+  const [isAddingGroup, setIsAddingGroup] = useState<boolean>(false);
 
   const markTypeOptions = [
     // Academic / Learning
@@ -221,13 +239,21 @@ const MapMarker: React.FC = () => {
   useEffect(() => {
     if (!mapRef.current) return;
     const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
-      if (!isAddingMarker) return;
-      const coords = e.lngLat.toArray() as [number, number];
-      setSelectedCoords(coords);
-      setShowInputModal(true);
-      setIsAddingMarker(false);
+      if (isAddingMarker) {
+        const coords = e.lngLat.toArray() as [number, number];
+        setSelectedCoords(coords);
+        setShowInputModal(true);
+        setIsAddingMarker(false);
+      } else if (isAddingGroup) {
+        const coords = e.lngLat.toArray() as [number, number];
+        setGroupMarkers(prev => [...prev, { coords, index: prev.length + 1 }]);
+        // Add temporary marker
+        new mapboxgl.Marker({ color: groupColor })
+          .setLngLat([coords[0], coords[1]])
+          .addTo(mapRef.current!);
+      }
     };
-    if (isAddingMarker) {
+    if (isAddingMarker || isAddingGroup) {
       mapRef.current.on('click', handleMapClick);
     } else {
       mapRef.current.off('click', handleMapClick);
@@ -235,7 +261,7 @@ const MapMarker: React.FC = () => {
     return () => {
       if (mapRef.current) mapRef.current.off('click', handleMapClick);
     };
-  }, [isAddingMarker]);
+  }, [isAddingMarker, isAddingGroup, groupColor, groupMarkers]);
  const handleAddMarker = () => {
    if (!mapRef.current) return;
 
@@ -251,7 +277,7 @@ const MapMarker: React.FC = () => {
  };
 
  const loadMarkers = async () => {
-   const { data, error } = await supabase.from('ar_pois').select('id, lat, lng, label, mark_type, color, height, dates');
+   const { data, error } = await supabase.from('ar_pois').select('id, lat, lng, label, mark_type, color, height, dates, group_name, group_index');
    if (error) {
      console.error('Error loading markers:', error);
    } else {
@@ -295,7 +321,7 @@ const MapMarker: React.FC = () => {
    markerRefs.current = [];
    const filtered = getFilteredMarkers();
    filtered.forEach(marker => {
-     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
+     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}${marker.group_name ? `<br>Group: ${marker.group_name} #${marker.group_index}` : ''}`);
      const mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
        .setLngLat([marker.lng, marker.lat])
        .setPopup(popup)
@@ -327,6 +353,34 @@ const MapMarker: React.FC = () => {
      setMarkerColor('#007cf0');
      setMarkerDates([]);
      setSelectedCoords(null);
+     loadMarkers();
+   }
+ };
+
+ const handleSaveGroup = async () => {
+   if (!groupName || groupMarkers.length === 0) {
+     alert('Please enter group name and add markers');
+     return;
+   }
+   const markersToInsert = groupMarkers.map((marker, index) => ({
+     lat: marker.coords[1],
+     lng: marker.coords[0],
+     label: `${groupName} ${index + 1}`,
+     mark_type: markerMarkType,
+     color: groupColor,
+     dates: markerDates,
+     group_name: groupName,
+     group_index: index + 1,
+   }));
+   const { error } = await supabase.from('ar_pois').insert(markersToInsert);
+   if (error) {
+     console.error('Error saving group:', error);
+   } else {
+     setShowGroupModal(false);
+     setGroupName('');
+     setGroupColor('#007cf0');
+     setGroupMarkers([]);
+     setIsAddingGroup(false);
      loadMarkers();
    }
  };
@@ -431,6 +485,18 @@ const MapMarker: React.FC = () => {
                     {isAddingMarker ? 'Cancel Adding Marker' : 'Add Marker'}
                   </IonButton>
                   {isAddingMarker && <p style={{ textAlign: 'center', color: 'red' }}>Click on the map to place a marker</p>}
+
+                  <IonButton expand="block" onClick={() => setIsAddingGroup(!isAddingGroup)}>
+                    <IonIcon icon={isAddingGroup ? close : add} slot="start" />
+                    {isAddingGroup ? 'Cancel Adding Group' : 'Add Group'}
+                  </IonButton>
+                  {isAddingGroup && <p style={{ textAlign: 'center', color: 'red' }}>Click on the map to place group markers</p>}
+                  {isAddingGroup && groupMarkers.length > 0 && (
+                    <IonButton expand="block" onClick={() => setShowGroupModal(true)}>
+                      <IonIcon icon={checkmark} slot="start" />
+                      Finish Group ({groupMarkers.length} markers)
+                    </IonButton>
+                  )}
 
                   <IonButton expand="block" onClick={() => setShowMarkersList(!showMarkersList)}>
                     <IonIcon icon={showMarkersList ? chevronBack : chevronForward} slot="start" />
@@ -553,6 +619,60 @@ const MapMarker: React.FC = () => {
             Done
           </IonButton>
           <IonButton expand="full" onClick={() => setShowInputModal(false)} color="danger">
+            <IonIcon icon={close} slot="start" />
+            Cancel
+          </IonButton>
+        </IonContent>
+      </IonModal>
+
+      <IonModal isOpen={showGroupModal} onDidDismiss={() => setShowGroupModal(false)}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Create Group</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setShowGroupModal(false)}>
+                <IonIcon icon={close} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent style={{padding: '10px'}}>
+          <IonItem style={{marginBottom: '10px'}}>
+            <IonLabel position="stacked">Group Name</IonLabel>
+            <IonInput value={groupName} onIonChange={e => setGroupName(e.detail.value!)} placeholder="Enter group name" />
+          </IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
+            <IonLabel position="stacked">Group Color</IonLabel>
+            <input type="color" value={groupColor} onChange={e => setGroupColor(e.target.value)} style={{width: '100%', height: '40px'}} />
+          </IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
+            <IonLabel position="stacked">Mark Type</IonLabel>
+            <IonSelect value={markerMarkType} placeholder="Select mark type" onIonChange={e => setMarkerMarkType(e.detail.value!)}>
+              {markTypeOptions.map(option => (
+                <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
+            <IonLabel position="stacked">Dates</IonLabel>
+            <IonDatetime
+              presentation="date"
+              multiple={true}
+              value={markerDates}
+              onIonChange={(e) => setMarkerDates(e.detail.value as string[])}
+            />
+          </IonItem>
+          <IonButton expand="full" onClick={handleSaveGroup} color="primary">
+            <IonIcon icon={checkmark} slot="start" />
+            Save Group
+          </IonButton>
+          <IonButton expand="full" onClick={() => {
+            setShowGroupModal(false);
+            setGroupMarkers([]);
+            setIsAddingGroup(false);
+            // Reload to remove temp markers
+            loadMarkers();
+          }} color="danger">
             <IonIcon icon={close} slot="start" />
             Cancel
           </IonButton>
