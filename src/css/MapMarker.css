@@ -29,12 +29,14 @@
   transform: translateX(0);
 }
 .options-card {
-  background: rgba(255, 255, 255, 0.95);
+   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   width: 220px;
-    position: relative;
+  height: 450px;   
+  overflow-y: auto; 
+  position: relative;
 }
 
 .pin-container {
@@ -52,12 +54,14 @@
   border-radius: 50%;
   border: 2px solid white;
 }
+
 @media (max-width: 768px) {
   .options-wrapper {
-    top: auto;
-    bottom: 500px;
+    top: 10px;
+    bottom: 250px;
     right: 45%;
     transform: translateX(150%);
+    transition: transform 0.9s ease-in-out;
   }
 
   .options-wrapper.closed {
@@ -66,7 +70,7 @@
 
   .options-card {
     width: 200px;
-    border-radius: 50px;
-    padding: 20px;
+    border-radius: 20px;
+    padding: 10px;
   }
 }
