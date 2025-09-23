@@ -23,9 +23,6 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from "../utils/supabaseClient";
 import '../css/MapMarker.css';
-import pinIcon from '../assets/3d-pin.svg';
-import pinAdvancedIcon from '../assets/3d-pin-advanced.svg';
-import pinMarkerIcon from '../assets/3d-pin-marker.svg';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -43,28 +40,18 @@ const MapMarker: React.FC = () => {
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(null);
   const [showInputModal, setShowInputModal] = useState<boolean>(false);
   const [markerLabel, setMarkerLabel] = useState<string>('');
-  const [markerIcon, setMarkerIcon] = useState<string>('');
+  const [markerMarkType, setMarkerMarkType] = useState<string>('');
+  const [markerColor, setMarkerColor] = useState<string>('#007cf0');
   const [markers, setMarkers] = useState<any[]>([]);
   const [showMarkersList, setShowMarkersList] = useState<boolean>(false);
 
-  const iconOptions = [
-    { label: 'Pin', value: pinIcon },
-    { label: 'Advanced Pin', value: pinAdvancedIcon },
-    { label: 'Marker Pin', value: pinMarkerIcon },
+  const markTypeOptions = [
+    { label: 'Building', value: 'building' },
+    { label: 'Department', value: 'department' },
+    { label: 'Events', value: 'events' },
+    { label: 'Rooms', value: 'rooms' },
+    { label: 'Hazard', value: 'hazard' },
   ];
-
-  const getIconUrl = (icon: string) => {
-    switch (icon) {
-      case '/assets/3d-pin.svg':
-        return pinIcon; 
-      case '/assets/3d-pin-advanced.svg':
-        return pinAdvancedIcon;
-      case '/assets/3d-pin-marker.svg':
-        return pinMarkerIcon;
-      default:
-        return icon; 
-    }
-  };
 
 
   const [cameraState, setCameraState] = useState({
@@ -233,7 +220,7 @@ const MapMarker: React.FC = () => {
  };
 
  const loadMarkers = async () => {
-   const { data, error } = await supabase.from('ar_pois').select('*');
+   const { data, error } = await supabase.from('ar_pois').select('id, lat, lng, label, mark_type, color, height');
    if (error) {
      console.error('Error loading markers:', error);
    } else {
@@ -248,14 +235,8 @@ const MapMarker: React.FC = () => {
    markerRefs.current.forEach(marker => marker.remove());
    markerRefs.current = [];
    markersData.forEach(marker => {
-     const el = document.createElement('div');
-     el.style.backgroundImage = `url(${getIconUrl(marker.icon)})`;
-     el.style.width = '30px';
-     el.style.height = '30px';
-     el.style.backgroundSize = 'cover';
-     el.setAttribute('aria-label', 'Map marker'); 
-     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
-     const mapMarker = new mapboxgl.Marker({ element: el })
+     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
+     const mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
        .setLngLat([marker.lng, marker.lat])
        .setPopup(popup)
        .addTo(mapRef.current!);
@@ -264,7 +245,7 @@ const MapMarker: React.FC = () => {
  };
 
  const handleSaveMarker = async () => {
-   if (!selectedCoords || !markerLabel || !markerIcon) {
+   if (!selectedCoords || !markerLabel || !markerMarkType) {
      alert('Please fill all fields');
      return;
    }
@@ -272,14 +253,16 @@ const MapMarker: React.FC = () => {
      lat: selectedCoords[1],
      lng: selectedCoords[0],
      label: markerLabel,
-     icon: markerIcon,
+     mark_type: markerMarkType,
+     color: markerColor,
    });
    if (error) {
      console.error('Error saving marker:', error);
    } else {
      setShowInputModal(false);
      setMarkerLabel('');
-     setMarkerIcon('');
+     setMarkerMarkType('');
+     setMarkerColor('#007cf0');
      setSelectedCoords(null);
      loadMarkers();
    }
@@ -404,12 +387,16 @@ const MapMarker: React.FC = () => {
             <IonInput value={markerLabel} onIonChange={e => setMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
           </IonItem>
           <IonItem>
-            <IonLabel position="stacked">Icon</IonLabel>
-            <IonSelect value={markerIcon} placeholder="Select icon" onIonChange={e => setMarkerIcon(e.detail.value)}>
-              {iconOptions.map(option => (
+            <IonLabel position="stacked">Mark Type</IonLabel>
+            <IonSelect value={markerMarkType} placeholder="Select mark type" onIonChange={e => setMarkerMarkType(e.detail.value!)}>
+              {markTypeOptions.map(option => (
                 <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
               ))}
             </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Color</IonLabel>
+            <IonInput value={markerColor} onIonChange={e => setMarkerColor(e.detail.value!)} placeholder="#007cf0" />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Latitude</IonLabel>

@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS public.ar_pois (
   lat DOUBLE PRECISION NOT NULL,
   lng DOUBLE PRECISION NOT NULL,
   label TEXT NOT NULL,
-  icon TEXT NOT NULL,
+  mark_type TEXT NOT NULL,
+  color TEXT DEFAULT '#007cf0',
   height INTEGER DEFAULT 1
 );
 

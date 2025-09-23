@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime } from "@ionic/react";
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime, IonModal, IonInput, IonSelect, IonSelectOption, IonIcon, IonButton } from "@ionic/react";
+import { checkmark, close } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
 import pinIcon from '../assets/3d-pin.svg';
 import pinAdvancedIcon from '../assets/3d-pin-advanced.svg';
@@ -13,7 +14,8 @@ type POI = {
   lat: number;
   lng: number;
   label: string;
-  icon: string;
+  mark_type: string;
+  color: string;
   height: number;
   editing?: boolean;
 };
@@ -27,19 +29,20 @@ const Builded: React.FC = () => {
   const [mapLocation, setMapLocation] = useState<POI | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [newMarkerLabel, setNewMarkerLabel] = useState<string>('');
+  const [newMarkerMarkType, setNewMarkerMarkType] = useState<string>('');
+  const [newMarkerColor, setNewMarkerColor] = useState<string>('#007cf0');
+  const [newMarkerLat, setNewMarkerLat] = useState<string>('');
+  const [newMarkerLng, setNewMarkerLng] = useState<string>('');
 
-  const getIconUrl = (icon: string) => {
-    switch (icon) {
-      case '/assets/3d-pin.svg':
-        return pinIcon;
-      case '/assets/3d-pin-advanced.svg':
-        return pinAdvancedIcon;
-      case '/assets/3d-pin-marker.svg':
-        return pinMarkerIcon;
-      default:
-        return icon;
-    }
-  };
+  const markTypeOptions = [
+    { label: 'Building', value: 'building' },
+    { label: 'Department', value: 'department' },
+    { label: 'Events', value: 'events' },
+    { label: 'Rooms', value: 'rooms' },
+    { label: 'Hazard', value: 'hazard' },
+  ];
 
   useEffect(() => {
     fetchPois();
@@ -59,7 +62,7 @@ const Builded: React.FC = () => {
         zoom: 15
       });
 
-      new mapboxgl.Marker()
+      new mapboxgl.Marker({ color: mapLocation.color || '#007cf0' })
         .setLngLat([mapLocation.lng, mapLocation.lat])
         .addTo(map.current);
     }
@@ -68,7 +71,7 @@ const Builded: React.FC = () => {
   async function fetchPois() {
     const { data, error } = await supabase
       .from("ar_pois")
-      .select("id, lat, lng, label, icon, height");
+      .select("id, lat, lng, label, mark_type, color, height");
     if (error) {
       console.error(error);
       return;
@@ -82,7 +85,8 @@ const Builded: React.FC = () => {
      .from("ar_pois")
      .update({
        label: p.label,
-       icon: p.icon,
+       mark_type: p.mark_type,
+       color: p.color,
        height: p.height,
        lat: p.lat,
        lng: p.lng,
@@ -153,6 +157,32 @@ async function deleteAll() {
   setSelectAll(false);
 }
 
+const handleSaveNewMarker = async () => {
+  if (!newMarkerLabel || !newMarkerMarkType || !newMarkerLat || !newMarkerLng) {
+    alert('Please fill all fields');
+    return;
+  }
+  const { error } = await supabase.from('ar_pois').insert({
+    lat: parseFloat(newMarkerLat),
+    lng: parseFloat(newMarkerLng),
+    label: newMarkerLabel,
+    mark_type: newMarkerMarkType,
+    color: newMarkerColor,
+    height: 1,
+  });
+  if (error) {
+    console.error('Error saving marker:', error);
+  } else {
+    setShowAddModal(false);
+    setNewMarkerLabel('');
+    setNewMarkerMarkType('');
+    setNewMarkerColor('#007cf0');
+    setNewMarkerLat('');
+    setNewMarkerLng('');
+    fetchPois();
+  }
+};
+
 
   return (
     <IonPage>
@@ -170,7 +200,8 @@ async function deleteAll() {
             {selected ? (
               <div className="builded-card">
                 <h4>Marker Details</h4>
-                <p><strong>Icon:</strong> {selected.icon}</p>
+                <p><strong>Mark Type:</strong> {selected.mark_type}</p>
+                <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, padding: '2px 8px', borderRadius: '4px'}}>{selected.color}</span></p>
                 <p><strong>Label:</strong> {selected.label}</p>
                 <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
                 <p><strong>Height:</strong> {selected.height}m</p>
@@ -194,11 +225,24 @@ async function deleteAll() {
                   value={selected.label}
                   onChange={(e) => setSelected({ ...selected, label: e.target.value })}
                 />
-                <label>Icon</label>
+                <label>Mark Type</label>
+                <select
+                  className="input"
+                  value={selected.mark_type}
+                  onChange={(e) => setSelected({ ...selected, mark_type: e.target.value })}
+                >
+                  <option value="building">Building</option>
+                  <option value="department">Department</option>
+                  <option value="events">Events</option>
+                  <option value="rooms">Rooms</option>
+                  <option value="hazard">Hazard</option>
+                </select>
+                <label>Color</label>
                 <input
                   className="input"
-                  value={selected.icon}
-                  onChange={(e) => setSelected({ ...selected, icon: e.target.value })}
+                  type="color"
+                  value={selected.color}
+                  onChange={(e) => setSelected({ ...selected, color: e.target.value })}
                 />
                 <label>Latitude</label>
                 <input
@@ -253,7 +297,8 @@ async function deleteAll() {
                     <div className="poi-meta">
                       <span className="poi-label">{p.label}</span>
                       <span className="poi-coords">{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</span>
-                      <span className="poi-icon">{p.icon}</span>
+                      <span className="poi-type">{p.mark_type}</span>
+                      <span className="poi-color" style={{backgroundColor: p.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span>
                       <span className="poi-height">Height: {p.height}m</span>
                     </div>
                     <div className="poi-actions">
@@ -293,6 +338,43 @@ async function deleteAll() {
           </div>
         </div>
       </IonContent>
+
+      <IonModal isOpen={showAddModal} onDidDismiss={() => setShowAddModal(false)} onDidPresent={() => {
+        setTimeout(() => {
+          const input = document.querySelector('ion-input input') as HTMLInputElement;
+          if (input) input.focus();
+        }, 100);
+      }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Add Marker</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setShowAddModal(false)}>
+                <IonIcon icon={close} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <IonInput value={newMarkerLabel} onIonChange={e => setNewMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
+          <IonSelect value={newMarkerMarkType} placeholder="Select mark type" onIonChange={e => setNewMarkerMarkType(e.detail.value!)}>
+            {markTypeOptions.map(option => (
+              <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
+            ))}
+          </IonSelect>
+          <IonInput value={newMarkerColor} onIonChange={e => setNewMarkerColor(e.detail.value!)} placeholder="#007cf0" />
+          <IonInput type="number" value={newMarkerLat} onIonChange={e => setNewMarkerLat(e.detail.value!)} placeholder="Latitude" />
+          <IonInput type="number" value={newMarkerLng} onIonChange={e => setNewMarkerLng(e.detail.value!)} placeholder="Longitude" />
+          <IonButton expand="full" onClick={handleSaveNewMarker} color="primary">
+            <IonIcon icon={checkmark} slot="start" />
+            Done
+          </IonButton>
+          <IonButton expand="full" onClick={() => setShowAddModal(false)} color="danger">
+            <IonIcon icon={close} slot="start" />
+            Cancel
+          </IonButton>
+        </IonContent>
+      </IonModal>
     </IonPage>
   );
 };
