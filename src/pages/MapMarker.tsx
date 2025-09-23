@@ -62,6 +62,9 @@ const MapMarker: React.FC = () => {
   const [selectedViewType, setSelectedViewType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [showPermanentMarks, setShowPermanentMarks] = useState<boolean>(true);
+  const [showGroupMarks, setShowGroupMarks] = useState<boolean>(true);
+  const [showDatedMarks, setShowDatedMarks] = useState<boolean>(true);
   const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
   const [groupName, setGroupName] = useState<string>('');
   const [groupColor, setGroupColor] = useState<string>('#007cf0');
@@ -234,7 +237,7 @@ const MapMarker: React.FC = () => {
 
   useEffect(() => {
     addMarkersToMap(markers);
-  }, [selectedViewType, searchQuery, markers]);
+  }, [selectedViewType, searchQuery, markers, showPermanentMarks, showGroupMarks, showDatedMarks]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -295,7 +298,24 @@ const MapMarker: React.FC = () => {
        marker.mark_type.toLowerCase().includes(query) ||
        marker.lat.toString().includes(query) ||
        marker.lng.toString().includes(query);
-     return matchesType && matchesSearch;
+
+     const isPermanent = !marker.dates || marker.dates.length === 0;
+     const isGroup = !!marker.group_name;
+     const isDated = marker.dates && marker.dates.length > 0;
+
+     const categories = [];
+     if (isPermanent) categories.push('permanent');
+     if (isGroup) categories.push('group');
+     if (isDated) categories.push('dated');
+
+     const matchesCategory = categories.every(cat => {
+       if (cat === 'permanent') return showPermanentMarks;
+       if (cat === 'group') return showGroupMarks;
+       if (cat === 'dated') return showDatedMarks;
+       return false;
+     });
+
+     return matchesType && matchesSearch && matchesCategory;
    });
  };
 
@@ -502,6 +522,19 @@ const MapMarker: React.FC = () => {
                     <IonIcon icon={showMarkersList ? chevronBack : chevronForward} slot="start" />
                     {showMarkersList ? 'Hide Markers' : 'View All Markers'}
                   </IonButton>
+
+                  <IonItem lines="none">
+                    <IonLabel>View Permanent Marks</IonLabel>
+                    <IonToggle checked={showPermanentMarks} onIonChange={(e) => setShowPermanentMarks(e.detail.checked)} />
+                  </IonItem>
+                  <IonItem lines="none">
+                    <IonLabel>View Group Marks</IonLabel>
+                    <IonToggle checked={showGroupMarks} onIonChange={(e) => setShowGroupMarks(e.detail.checked)} />
+                  </IonItem>
+                  <IonItem lines="none">
+                    <IonLabel>View Dated Marks</IonLabel>
+                    <IonToggle checked={showDatedMarks} onIonChange={(e) => setShowDatedMarks(e.detail.checked)} />
+                  </IonItem>
 
                   {showMarkersList && (
                     <div className="markers-list">

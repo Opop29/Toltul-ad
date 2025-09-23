@@ -14,6 +14,9 @@ type POI = {
   mark_type: string;
   color: string;
   height: number;
+  dates?: string[];
+  group_name?: string;
+  group_index?: number;
   editing?: boolean;
 };
 
@@ -32,6 +35,9 @@ const Builded: React.FC = () => {
   const [newMarkerColor, setNewMarkerColor] = useState<string>('#007cf0');
   const [newMarkerLat, setNewMarkerLat] = useState<string>('');
   const [newMarkerLng, setNewMarkerLng] = useState<string>('');
+  const [showPermanentMarks, setShowPermanentMarks] = useState<boolean>(true);
+  const [showGroupMarks, setShowGroupMarks] = useState<boolean>(true);
+  const [showDatedMarks, setShowDatedMarks] = useState<boolean>(true);
 
   const markTypeOptions = [
     // Academic / Learning
@@ -90,7 +96,7 @@ const Builded: React.FC = () => {
   async function fetchPois() {
     const { data, error } = await supabase
       .from("ar_pois")
-      .select("id, lat, lng, label, mark_type, color, height");
+      .select("id, lat, lng, label, mark_type, color, height, dates, group_name, group_index");
     if (error) {
       console.error(error);
       return;
@@ -142,11 +148,11 @@ const Builded: React.FC = () => {
   // Select all checkbox handler
   useEffect(() => {
     if (selectAll) {
-      setCheckedIds(pois.map(p => p.id!));
+      setCheckedIds(getFilteredPois().map(p => p.id!));
     } else {
       setCheckedIds([]);
     }
-  }, [selectAll, pois]);
+  }, [selectAll, pois, showPermanentMarks, showGroupMarks, showDatedMarks]);
 
   // Individual checkbox handler
   const handleCheck = (id: number) => {
@@ -166,15 +172,38 @@ const Builded: React.FC = () => {
 
 
 async function deleteAll() {
-  if (pois.length === 0) return;
+  const filtered = getFilteredPois();
+  if (filtered.length === 0) return;
   await supabase
     .from("ar_pois")
     .delete()
-    .in("id", pois.map(p => p.id ?? ""));
+    .in("id", filtered.map(p => p.id ?? ""));
   fetchPois();
   setCheckedIds([]);
   setSelectAll(false);
 }
+
+const getFilteredPois = () => {
+  return pois.filter(poi => {
+    const isPermanent = !poi.dates || poi.dates.length === 0;
+    const isGroup = !!poi.group_name;
+    const isDated = poi.dates && poi.dates.length > 0;
+
+    const categories = [];
+    if (isPermanent) categories.push('permanent');
+    if (isGroup) categories.push('group');
+    if (isDated) categories.push('dated');
+
+    const matchesCategory = categories.every(cat => {
+      if (cat === 'permanent') return showPermanentMarks;
+      if (cat === 'group') return showGroupMarks;
+      if (cat === 'dated') return showDatedMarks;
+      return false;
+    });
+
+    return matchesCategory;
+  });
+};
 
 const handleSaveNewMarker = async () => {
   if (!newMarkerLabel || !newMarkerMarkType || !newMarkerLat || !newMarkerLng) {
@@ -314,13 +343,20 @@ const handleSaveNewMarker = async () => {
           <div className="list-container">
             <div className="builded-card">
               <h3>All Saved Markers</h3>
-              <div style={{display:'flex',gap:8,marginBottom:12}}>
-                <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
-                <button className="btn danger" onClick={deleteAll}>Delete All</button>
-                <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
+              <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:12}}>
+                <div style={{display:'flex', gap:8}}>
+                  <label><input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} /> Permanent</label>
+                  <label><input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} /> Groups</label>
+                  <label><input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} /> Dated</label>
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
+                  <button className="btn danger" onClick={deleteAll}>Delete All</button>
+                  <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
+                </div>
               </div>
               <div className="poi-list">
-                {pois.map((p) => (
+                {getFilteredPois().map((p) => (
                   <div key={p.id} className="poi-item">
                     <input type="checkbox" checked={checkedIds.includes(p.id!)} onChange={() => handleCheck(p.id!)} style={{marginRight:8}} />
                     <div className="poi-meta">
