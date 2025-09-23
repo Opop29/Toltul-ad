@@ -14,23 +14,57 @@ import {
   IonToggle,
   IonButton,
   IonIcon,
+  IonModal,
+  IonInput,
+  IonTextarea,
 } from '@ionic/react';
-import { chevronForward, chevronBack } from 'ionicons/icons';
+import { chevronForward, chevronBack, add, close, checkmark } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { supabase } from "../utils/supabaseClient";
 import '../css/MapMarker.css';
+import pinIcon from '../assets/3d-pin.svg';
+import pinAdvancedIcon from '../assets/3d-pin-advanced.svg';
+import pinMarkerIcon from '../assets/3d-pin-marker.svg';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
 const MapMarker: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
+   const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const markerRefs = useRef<mapboxgl.Marker[]>([]);
 
   const [mapStyle, setMapStyle] = useState<string>('mapbox://styles/mapbox/streets-v11');
   const [is3D, setIs3D] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(true);
-  const [showMarkerOptions, setShowMarkerOptions] = useState<boolean>(false); // 👈 NEW STATE
   const [markerCoords, setMarkerCoords] = useState<[number, number] | null>(null);
+  const [isAddingMarker, setIsAddingMarker] = useState<boolean>(false);
+  const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(null);
+  const [showInputModal, setShowInputModal] = useState<boolean>(false);
+  const [markerLabel, setMarkerLabel] = useState<string>('');
+  const [markerIcon, setMarkerIcon] = useState<string>('');
+  const [markers, setMarkers] = useState<any[]>([]);
+
+  const iconOptions = [
+    { label: 'Pin', value: pinIcon },
+    { label: 'Advanced Pin', value: pinAdvancedIcon },
+    { label: 'Marker Pin', value: pinMarkerIcon },
+  ];
+
+  const getIconUrl = (icon: string) => {
+    switch (icon) {
+      case '/assets/3d-pin.svg':
+        return pinIcon;
+      case '/assets/3d-pin-advanced.svg':
+        return pinAdvancedIcon;
+      case '/assets/3d-pin-marker.svg':
+        return pinMarkerIcon;
+      default:
+        return icon; // fallback
+    }
+  };
+
 
   const [cameraState, setCameraState] = useState({
     center: [124.8681005804846, 8.360074137369724] as [number, number],
@@ -76,9 +110,10 @@ const MapMarker: React.FC = () => {
           'fill-extrusion-opacity': 0.6,
         },
       });
-    } else {
-      mapRef.current.setLayoutProperty('3d-buildings', 'visibility', 'visible');
-    }
+    }else {
+   
+    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "visible");
+  }
 
     mapRef.current.flyTo({
       pitch: 60,
@@ -87,6 +122,7 @@ const MapMarker: React.FC = () => {
       essential: true,
     });
   };
+  
 
   const disable3D = () => {
     if (!mapRef.current) return;
@@ -97,9 +133,10 @@ const MapMarker: React.FC = () => {
       duration: 2000,
       essential: true,
     });
-    if (mapRef.current.getLayer('3d-buildings')) {
-      mapRef.current.setLayoutProperty('3d-buildings', 'visibility', 'none');
-    }
+      if (mapRef.current.getLayer("3d-buildings")) {
+    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "none");
+  }
+   
   };
 
   useEffect(() => {
@@ -115,7 +152,7 @@ const MapMarker: React.FC = () => {
         });
         mapRef.current.remove();
       } catch (err) {
-        console.warn('Map cleanup failed:', err);
+        console.warn("Map cleanup failed:", err);
       }
       mapRef.current = null;
     }
@@ -131,11 +168,14 @@ const MapMarker: React.FC = () => {
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+   
+
     mapRef.current.on('load', () => {
       mapRef.current?.resize();
       if (is3D) {
         enable3D();
       }
+      loadMarkers(); // Load markers after map is loaded
     });
 
     return () => {
@@ -143,7 +183,7 @@ const MapMarker: React.FC = () => {
         try {
           mapRef.current.remove();
         } catch (err) {
-          console.warn('Error while removing map:', err);
+          console.warn("Error while removing map:", err);
         }
         mapRef.current = null;
       }
@@ -159,32 +199,87 @@ const MapMarker: React.FC = () => {
     }
   }, [is3D]);
 
-  // 👇 Handle Add Marker
-  const handleAddMarker = () => {
+  useEffect(() => {
     if (!mapRef.current) return;
-
-    const lngLat = mapRef.current.getCenter();
-    if (markerRef.current) {
-      markerRef.current.remove();
+    const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
+      if (!isAddingMarker) return;
+      const coords = e.lngLat.toArray() as [number, number];
+      setSelectedCoords(coords);
+      setShowInputModal(true);
+      setIsAddingMarker(false);
+    };
+    if (isAddingMarker) {
+      mapRef.current.on('click', handleMapClick);
+    } else {
+      mapRef.current.off('click', handleMapClick);
     }
-    markerRef.current = new mapboxgl.Marker({ color: 'red' })
-      .setLngLat(lngLat)
-      .addTo(mapRef.current);
+    return () => {
+      if (mapRef.current) mapRef.current.off('click', handleMapClick);
+    };
+  }, [isAddingMarker]);
+ const handleAddMarker = () => {
+   if (!mapRef.current) return;
 
-    setMarkerCoords(lngLat.toArray() as [number, number]);
-  };
+   const lngLat = mapRef.current.getCenter();
+   if (markerRef.current) {
+     markerRef.current.remove();
+   }
+   markerRef.current = new mapboxgl.Marker({ color: 'red' })
+     .setLngLat(lngLat)
+     .addTo(mapRef.current);
 
-  // 👇 Handle View Marker
-  const handleViewMarker = () => {
-    if (!mapRef.current || !markerCoords) return;
+   setMarkerCoords(lngLat.toArray() as [number, number]);
+ };
 
-    mapRef.current.flyTo({
-      center: markerCoords,
-      zoom: 18,
-      essential: true,
-    });
-  };
+ const loadMarkers = async () => {
+   const { data, error } = await supabase.from('ar_pois').select('*');
+   if (error) {
+     console.error('Error loading markers:', error);
+   } else {
+     setMarkers(data || []);
+     addMarkersToMap(data || []);
+   }
+ };
 
+ const addMarkersToMap = (markersData: any[]) => {
+   if (!mapRef.current) return;
+   // Remove existing markers
+   markerRefs.current.forEach(marker => marker.remove());
+   markerRefs.current = [];
+   markersData.forEach(marker => {
+     const el = document.createElement('div');
+     el.style.backgroundImage = `url(${getIconUrl(marker.icon)})`;
+     el.style.width = '30px';
+     el.style.height = '30px';
+     el.style.backgroundSize = 'cover';
+     const mapMarker = new mapboxgl.Marker({ element: el })
+       .setLngLat([marker.lng, marker.lat])
+       .addTo(mapRef.current!);
+     markerRefs.current.push(mapMarker);
+   });
+ };
+
+ const handleSaveMarker = async () => {
+   if (!selectedCoords || !markerLabel || !markerIcon) {
+     alert('Please fill all fields');
+     return;
+   }
+   const { error } = await supabase.from('ar_pois').insert({
+     lat: selectedCoords[1],
+     lng: selectedCoords[0],
+     label: markerLabel,
+     icon: markerIcon,
+   });
+   if (error) {
+     console.error('Error saving marker:', error);
+   } else {
+     setShowInputModal(false);
+     setMarkerLabel('');
+     setMarkerIcon('');
+     setSelectedCoords(null);
+     loadMarkers();
+   }
+ };
   return (
     <IonPage>
       <IonHeader>
@@ -203,7 +298,7 @@ const MapMarker: React.FC = () => {
           </div>
 
           {/* Slide Options Container */}
-          <div className={`options-wrapper ${showOptions ? 'open' : 'closed'}`}>
+          <div className={`options-wrapper ${showOptions ? "open" : "closed"}`}>
             <div className="options-card">
               {/* Slide toggle button inside */}
               <IonButton
@@ -239,32 +334,72 @@ const MapMarker: React.FC = () => {
                     />
                   </IonItem>
 
-                  {/* Create Marker Section */}
-                  <IonItem lines="none">
-                    <IonButton
-                      expand="block"
-                      onClick={() => setShowMarkerOptions(!showMarkerOptions)}
-                    >
-                      Create Marker
-                    </IonButton>
-                  </IonItem>
+                  <IonButton expand="block" onClick={() => setIsAddingMarker(true)}>
+                    <IonIcon icon={add} slot="start" />
+                    Add Marker
+                  </IonButton>
 
-                  {showMarkerOptions && (
-                    <div className="marker-options">
-                      <IonButton expand="block" color="success" onClick={handleAddMarker}>
-                        Add Marker
-                      </IonButton>
-                      <IonButton expand="block" color="primary" onClick={handleViewMarker}>
-                        View Marker
-                      </IonButton>
-                    </div>
-                  )}
                 </>
               )}
             </div>
           </div>
         </div>
       </IonContent>
+
+      <IonModal isOpen={showInputModal} onDidDismiss={() => setShowInputModal(false)} onDidPresent={() => {
+        // Focus the label input when modal opens
+        setTimeout(() => {
+          const input = document.querySelector('ion-input input') as HTMLInputElement;
+          if (input) input.focus();
+        }, 100);
+      }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Add Marker</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setShowInputModal(false)}>
+                <IonIcon icon={close} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <IonItem>
+            <IonLabel position="stacked">Label</IonLabel>
+            <IonInput value={markerLabel} onIonChange={e => setMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Icon</IonLabel>
+            <IonSelect value={markerIcon} placeholder="Select icon" onIonChange={e => setMarkerIcon(e.detail.value)}>
+              {iconOptions.map(option => (
+                <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Latitude</IonLabel>
+            <IonInput type="number" value={selectedCoords ? selectedCoords[1].toString() : ''} onIonChange={e => {
+              const val = parseFloat(e.detail.value!);
+              setSelectedCoords(prev => prev ? [prev[0], val] : null);
+            }} placeholder="Latitude" />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Longitude</IonLabel>
+            <IonInput type="number" value={selectedCoords ? selectedCoords[0].toString() : ''} onIonChange={e => {
+              const val = parseFloat(e.detail.value!);
+              setSelectedCoords(prev => prev ? [val, prev[1]] : null);
+            }} placeholder="Longitude" />
+          </IonItem>
+          <IonButton expand="full" onClick={handleSaveMarker} color="primary">
+            <IonIcon icon={checkmark} slot="start" />
+            Done
+          </IonButton>
+          <IonButton expand="full" onClick={() => setShowInputModal(false)} color="danger">
+            <IonIcon icon={close} slot="start" />
+            Cancel
+          </IonButton>
+        </IonContent>
+      </IonModal>
     </IonPage>
   );
 };
