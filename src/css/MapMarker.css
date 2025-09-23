@@ -201,4 +201,16 @@
   width: 300px;
   border: 5px solid rgba(0, 0, 0, 0.1);
   max-height: 370px;
+  position: relative;
+}
+
+.button-container .builded-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #007cf0, #00dfd8, #ffc107);
+  border-radius: 16px 16px 0 0;
 }

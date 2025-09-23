@@ -43,6 +43,7 @@ const MapMarker: React.FC = () => {
   const [markerLabel, setMarkerLabel] = useState<string>('');
   const [markerMarkType, setMarkerMarkType] = useState<string>('');
   const [markerColor, setMarkerColor] = useState<string>('#007cf0');
+  const [markerDates, setMarkerDates] = useState<string[]>([]);
   const [markers, setMarkers] = useState<any[]>([]);
   const [showMarkersList, setShowMarkersList] = useState<boolean>(false);
   const [selectedViewType, setSelectedViewType] = useState<string>('all');
@@ -315,6 +316,7 @@ const MapMarker: React.FC = () => {
      label: markerLabel,
      mark_type: markerMarkType,
      color: markerColor,
+     dates: markerDates,
    });
    if (error) {
      console.error('Error saving marker:', error);
@@ -323,6 +325,7 @@ const MapMarker: React.FC = () => {
      setMarkerLabel('');
      setMarkerMarkType('');
      setMarkerColor('#007cf0');
+     setMarkerDates([]);
      setSelectedCoords(null);
      loadMarkers();
    }
@@ -505,12 +508,12 @@ const MapMarker: React.FC = () => {
             </IonButtons>
           </IonToolbar>
         </IonHeader>
-        <IonContent>
-          <IonItem>
+        <IonContent style={{padding: '10px'}}>
+          <IonItem style={{marginBottom: '10px'}}>
             <IonLabel position="stacked">Label</IonLabel>
             <IonInput value={markerLabel} onIonChange={e => setMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
           </IonItem>
-          <IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
             <IonLabel position="stacked">Mark Type</IonLabel>
             <IonSelect value={markerMarkType} placeholder="Select mark type" onIonChange={e => setMarkerMarkType(e.detail.value!)}>
               {markTypeOptions.map(option => (
@@ -518,23 +521,32 @@ const MapMarker: React.FC = () => {
               ))}
             </IonSelect>
           </IonItem>
-          <IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
             <IonLabel position="stacked">Color</IonLabel>
             <input type="color" value={markerColor} onChange={e => setMarkerColor(e.target.value)} style={{width: '100%', height: '40px'}} />
           </IonItem>
-          <IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
             <IonLabel position="stacked">Latitude</IonLabel>
             <IonInput type="number" value={selectedCoords ? selectedCoords[1].toString() : ''} onIonChange={e => {
               const val = parseFloat(e.detail.value!);
               setSelectedCoords(prev => prev ? [prev[0], val] : null);
             }} placeholder="Latitude" />
           </IonItem>
-          <IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
             <IonLabel position="stacked">Longitude</IonLabel>
             <IonInput type="number" value={selectedCoords ? selectedCoords[0].toString() : ''} onIonChange={e => {
               const val = parseFloat(e.detail.value!);
               setSelectedCoords(prev => prev ? [val, prev[1]] : null);
             }} placeholder="Longitude" />
+          </IonItem>
+          <IonItem style={{marginBottom: '10px'}}>
+            <IonLabel position="stacked">Dates</IonLabel>
+            <IonDatetime
+              presentation="date"
+              multiple={true}
+              value={markerDates}
+              onIonChange={(e) => setMarkerDates(e.detail.value as string[])}
+            />
           </IonItem>
           <IonButton expand="full" onClick={handleSaveMarker} color="primary">
             <IonIcon icon={checkmark} slot="start" />
