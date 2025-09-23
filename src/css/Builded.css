@@ -1,19 +1,29 @@
 /* Modern card style for Builded page */
 .builded-wrap {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  padding: 24px 0;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 .builded-card {
   background: rgba(255,255,255,0.95);
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(0,124,240,0.10);
-  padding: 24px 18px;
-  margin: 0 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.details-container .builded-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0,124,240,0.20);
 }
 .poi-list {
   display: flex;
@@ -82,4 +92,24 @@
   font-size: 1rem;
   text-align: center;
   margin-top: 24px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .builded-wrap {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 15px;
+  }
+  .builded-card {
+    min-height: 250px;
+    max-height: 400px;
+    padding: 15px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .builded-wrap {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

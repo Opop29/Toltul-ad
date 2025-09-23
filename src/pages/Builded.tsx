@@ -215,12 +215,22 @@ const handleSaveNewMarker = async () => {
       </IonHeader>
       <IonContent fullscreen>
         <div className="builded-wrap">
+          <div className="calendar-container">
+            <div className="builded-card">
+              <h3>Calendar</h3>
+              <IonDatetime
+                presentation="date"
+                value={selectedDate}
+                onIonChange={(e) => setSelectedDate(e.detail.value as string)}
+              />
+            </div>
+          </div>
           <div className="details-container">
             {selected ? (
               <div className="builded-card">
                 <h4>Marker Details</h4>
                 <p><strong>Mark Type:</strong> {selected.mark_type}</p>
-                <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, padding: '2px 8px', borderRadius: '4px'}}>{selected.color}</span></p>
+                <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span> {selected.color}</p>
                 <p><strong>Label:</strong> {selected.label}</p>
                 <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
                 <p><strong>Height:</strong> {selected.height}m</p>
@@ -343,16 +353,6 @@ const handleSaveNewMarker = async () => {
                   <p>Select a marker to view on map</p>
                 </div>
               )}
-            </div>
-          </div>
-          <div className="calendar-container">
-            <div className="builded-card">
-              <h3>Calendar</h3>
-              <IonDatetime
-                presentation="date"
-                value={selectedDate}
-                onIonChange={(e) => setSelectedDate(e.detail.value as string)}
-              />
             </div>
           </div>
         </div>

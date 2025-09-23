@@ -17,6 +17,7 @@ import {
   IonModal,
   IonInput,
   IonTextarea,
+  IonDatetime,
 } from '@ionic/react';
 import { chevronForward, chevronBack, add, close, checkmark } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
@@ -46,6 +47,7 @@ const MapMarker: React.FC = () => {
   const [showMarkersList, setShowMarkersList] = useState<boolean>(false);
   const [selectedViewType, setSelectedViewType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   const markTypeOptions = [
     // Academic / Learning
@@ -248,7 +250,7 @@ const MapMarker: React.FC = () => {
  };
 
  const loadMarkers = async () => {
-   const { data, error } = await supabase.from('ar_pois').select('id, lat, lng, label, mark_type, color, height');
+   const { data, error } = await supabase.from('ar_pois').select('id, lat, lng, label, mark_type, color, height, dates');
    if (error) {
      console.error('Error loading markers:', error);
    } else {
@@ -270,9 +272,24 @@ const MapMarker: React.FC = () => {
    });
  };
 
- const addMarkersToMap = (markersData: any[]) => {
+ const filterMarkersByDate = (date: string) => {
    if (!mapRef.current) return;
    // Remove existing markers
+   markerRefs.current.forEach(marker => marker.remove());
+   markerRefs.current = [];
+   const filtered = markers.filter(marker => marker.dates && marker.dates.includes(date));
+   filtered.forEach(marker => {
+     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
+     const mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
+       .setLngLat([marker.lng, marker.lat])
+       .setPopup(popup)
+       .addTo(mapRef.current!);
+     markerRefs.current.push(mapMarker);
+   });
+ };
+
+ const addMarkersToMap = (markersData: any[]) => {
+   if (!mapRef.current) return;
    markerRefs.current.forEach(marker => marker.remove());
    markerRefs.current = [];
    const filtered = getFilteredMarkers();
@@ -285,6 +302,7 @@ const MapMarker: React.FC = () => {
      markerRefs.current.push(mapMarker);
    });
  };
+
 
  const handleSaveMarker = async () => {
    if (!selectedCoords || !markerLabel || !markerMarkType) {
@@ -445,6 +463,28 @@ const MapMarker: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* New Container with Calendar */}
+          <div className="button-container">
+            <div className="builded-card">
+              <IonDatetime
+                presentation="date"
+                value={selectedDate}
+                onIonChange={(e) => {
+                  const date = e.detail.value as string;
+                  setSelectedDate(date);
+                  filterMarkersByDate(date);
+                }}
+              />
+              <IonButton expand="block" color="danger" onClick={() => {
+                setSelectedDate(new Date().toISOString().split('T')[0]);
+                addMarkersToMap(markers);
+              }}>
+                Cancel View
+              </IonButton>
+            </div>
+          </div>
+
         </div>
       </IonContent>
 

@@ -126,6 +126,22 @@
 .slide-toggle-btn:active {
   transform: translateY(-50%) scale(0.95);
 }
+
+.calendar-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 30;
+}
+
+.calendar-card {
+  background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+  border-radius: 16px;
+  padding: 160px;
+  box-shadow: 0 8px 32px rgba(33, 150, 243, 0.3);
+  width: 200px;
+  border: 1px solid rgba(33, 150, 243, 0.1);
+}
   border-radius: 50%;
   border: 2px solid white;
 }
@@ -169,4 +185,20 @@
     border-radius: 20px;
     padding: 10px;
   }
+}
+
+.button-container {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  z-index: 15;
+}
+
+.button-container .builded-card {
+  background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+  border-radius: 16px;
+  padding: 7px;
+  width: 300px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  max-height: 370px;
 }
