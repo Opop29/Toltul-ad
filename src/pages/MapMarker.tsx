@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   IonPage,
   IonHeader,
@@ -14,25 +14,39 @@ import {
   IonToggle,
   IonButton,
   IonIcon,
-} from '@ionic/react';
-import { chevronForward, chevronBack } from 'ionicons/icons';
-import mapboxgl from 'mapbox-gl';
-import '../css/MapMarker.css';
+  IonAlert,
+  IonList,
+} from "@ionic/react";
+import { chevronForward, chevronBack } from "ionicons/icons";
+import mapboxgl from "mapbox-gl";
+import { supabase } from "../utils/supabaseClient";
+import "../css/MapMarker.css";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
+
+interface POI {
+  id: number;
+  label: string;
+  lng: number;
+  lat: number;
+}
 
 const MapMarker: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-   const markerRef = useRef<mapboxgl.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<string>('mapbox://styles/mapbox/streets-v11');
+  const [mapStyle, setMapStyle] = useState<string>(
+    "mapbox://styles/mapbox/streets-v11"
+  );
   const [is3D, setIs3D] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(true);
-  const [markerCoords, setMarkerCoords] = useState<[number, number] | null>(null);
+  const [markerCoords, setMarkerCoords] = useState<[number, number] | null>(
+    null
+  );
+  const [showLabelPrompt, setShowLabelPrompt] = useState<boolean>(false);
+  const [pois, setPOIs] = useState<POI[]>([]);
 
-
-  const [cameraState, setCameraState] = useState({
+  const [cameraState] = useState({
     center: [124.8681005804846, 8.360074137369724] as [number, number],
     zoom: 16,
     pitch: 0,
@@ -40,46 +54,91 @@ const MapMarker: React.FC = () => {
   });
 
   const styles = [
-    { label: 'Streets', url: 'mapbox://styles/mapbox/streets-v11' },
-    { label: 'Outdoors', url: 'mapbox://styles/mapbox/outdoors-v12' },
-    { label: 'Light', url: 'mapbox://styles/mapbox/light-v11' },
-    { label: 'Dark', url: 'mapbox://styles/mapbox/dark-v11' },
-    { label: 'Satellite', url: 'mapbox://styles/mapbox/satellite-v9' },
-    { label: 'Satellite Streets', url: 'mapbox://styles/mapbox/satellite-streets-v12' },
+    { label: "Streets", url: "mapbox://styles/mapbox/streets-v11" },
+    { label: "Outdoors", url: "mapbox://styles/mapbox/outdoors-v12" },
+    { label: "Light", url: "mapbox://styles/mapbox/light-v11" },
+    { label: "Dark", url: "mapbox://styles/mapbox/dark-v11" },
+    { label: "Satellite", url: "mapbox://styles/mapbox/satellite-v9" },
+    { label: "Satellite Streets", url: "mapbox://styles/mapbox/satellite-streets-v12" },
   ];
 
+  /** Save POI to Supabase */
+  const savePOI = async (label: string, lng: number, lat: number) => {
+    const { error } = await supabase.from("pois").insert([{ label, lng, lat }]);
+    if (error) console.error("Error saving POI:", error);
+    else loadPOIs();
+  };
+
+  /** Load POIs from Supabase and display */
+  const loadPOIs = async () => {
+    if (!mapRef.current) return;
+
+    const { data, error } = await supabase.from("pois").select("*");
+    if (error) {
+      console.error("Error loading POIs:", error);
+      return;
+    }
+
+    setPOIs(data || []);
+
+    // Clear old markers
+    document.querySelectorAll(".poi-marker").forEach((el) => el.remove());
+
+    // Add new markers
+    data?.forEach((poi: POI) => {
+      const el = document.createElement("div");
+      el.className = "poi-marker";
+
+      const popup = new mapboxgl.Popup({ offset: 25 }).setText(poi.label);
+
+      new mapboxgl.Marker(el)
+        .setLngLat([poi.lng, poi.lat])
+        .setPopup(popup)
+        .addTo(mapRef.current!);
+    });
+  };
+
+  /** Fly to POI */
+  const flyToPOI = (lng: number, lat: number) => {
+    mapRef.current?.flyTo({
+      center: [lng, lat],
+      zoom: 18,
+      essential: true,
+    });
+  };
+
+  /** Enable 3D buildings */
   const enable3D = () => {
     if (!mapRef.current) return;
 
-    if (!mapRef.current.getSource('mapbox-dem')) {
-      mapRef.current.addSource('mapbox-dem', {
-        type: 'raster-dem',
-        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+    if (!mapRef.current.getSource("mapbox-dem")) {
+      mapRef.current.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
         tileSize: 512,
         maxzoom: 14,
       });
-      mapRef.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+      mapRef.current.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
     }
 
-    if (!mapRef.current.getLayer('3d-buildings')) {
+    if (!mapRef.current.getLayer("3d-buildings")) {
       mapRef.current.addLayer({
-        id: '3d-buildings',
-        source: 'composite',
-        'source-layer': 'building',
-        filter: ['==', 'extrude', 'true'],
-        type: 'fill-extrusion',
+        id: "3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        filter: ["==", "extrude", "true"],
+        type: "fill-extrusion",
         minzoom: 15,
         paint: {
-          'fill-extrusion-color': '#aaa',
-          'fill-extrusion-height': ['get', 'height'],
-          'fill-extrusion-base': ['get', 'min_height'],
-          'fill-extrusion-opacity': 0.6,
+          "fill-extrusion-color": "#aaa",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.6,
         },
       });
-    }else {
-   
-    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "visible");
-  }
+    } else {
+      mapRef.current.setLayoutProperty("3d-buildings", "visibility", "visible");
+    }
 
     mapRef.current.flyTo({
       pitch: 60,
@@ -88,40 +147,19 @@ const MapMarker: React.FC = () => {
       essential: true,
     });
   };
-  
 
+  /** Disable 3D */
   const disable3D = () => {
     if (!mapRef.current) return;
-
-    mapRef.current.flyTo({
-      pitch: 0,
-      bearing: 0,
-      duration: 2000,
-      essential: true,
-    });
-      if (mapRef.current.getLayer("3d-buildings")) {
-    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "none");
-  }
-   
+    mapRef.current.flyTo({ pitch: 0, bearing: 0, duration: 2000, essential: true });
+    if (mapRef.current.getLayer("3d-buildings")) {
+      mapRef.current.setLayoutProperty("3d-buildings", "visibility", "none");
+    }
   };
 
+  /** Initialize map */
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
-    if (mapRef.current) {
-      try {
-        setCameraState({
-          center: mapRef.current.getCenter().toArray() as [number, number],
-          zoom: mapRef.current.getZoom(),
-          pitch: mapRef.current.getPitch(),
-          bearing: mapRef.current.getBearing(),
-        });
-        mapRef.current.remove();
-      } catch (err) {
-        console.warn("Map cleanup failed:", err);
-      }
-      mapRef.current = null;
-    }
 
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -132,47 +170,35 @@ const MapMarker: React.FC = () => {
       bearing: cameraState.bearing,
     });
 
-    mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-     mapRef.current.on('click', (e) => {
+    mapRef.current.on("click", (e) => {
       const coords: [number, number] = [e.lngLat.lng, e.lngLat.lat];
       setMarkerCoords(coords);
-
-      if (markerRef.current) {
-        markerRef.current.setLngLat(coords);
-      } else {
-        markerRef.current = new mapboxgl.Marker({ color: '#d62828' })
-          .setLngLat(coords)
-          .addTo(mapRef.current!);
-      }
+      setShowLabelPrompt(true);
     });
 
-    mapRef.current.on('load', () => {
+    mapRef.current.on("load", () => {
       mapRef.current?.resize();
-       if (is3D) {
-      enable3D();
-    }
+      if (is3D) enable3D();
+      loadPOIs();
+    });
+
+    mapRef.current.on("style.load", () => {
+      if (is3D) enable3D();
+      loadPOIs();
     });
 
     return () => {
-      if (mapRef.current) {
-        try {
-          mapRef.current.remove();
-        } catch (err) {
-          console.warn("Error while removing map:", err);
-        }
-        mapRef.current = null;
-      }
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
-  }, [mapStyle]);
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
-    if (is3D) {
-      enable3D();
-    } else {
-      disable3D();
-    }
+    if (is3D) enable3D();
+    else disable3D();
   }, [is3D]);
 
   return (
@@ -188,14 +214,14 @@ const MapMarker: React.FC = () => {
 
       <IonContent fullscreen scrollY={false}>
         <div className="map-layout">
+          {/* Map */}
           <div className="map-wrapper">
             <div ref={mapContainerRef} className="map-container"></div>
           </div>
 
-          {/* Slide Options Container */}
+          {/* Options Panel */}
           <div className={`options-wrapper ${showOptions ? "open" : "closed"}`}>
             <div className="options-card">
-              {/* Slide toggle button inside */}
               <IonButton
                 className="slide-toggle-btn"
                 onClick={() => setShowOptions(!showOptions)}
@@ -228,7 +254,8 @@ const MapMarker: React.FC = () => {
                       onIonChange={(e) => setIs3D(e.detail.checked)}
                     />
                   </IonItem>
-                    {/* 📍 Pin Location Container */}
+
+                  {/* Pin Location Info */}
                   <div className="pin-container">
                     <h4>📍 Pin Location</h4>
                     {markerCoords ? (
@@ -240,12 +267,58 @@ const MapMarker: React.FC = () => {
                       <p>Click on the map to drop a pin.</p>
                     )}
                   </div>
+
+                  {/* POI List */}
+                  <IonList>
+                    <h4>📌 Saved POIs</h4>
+                    {pois.length > 0 ? (
+                      pois.map((poi) => (
+                        <IonItem
+                          key={poi.id}
+                          button
+                          onClick={() => flyToPOI(poi.lng, poi.lat)}
+                        >
+                          <IonLabel>{poi.label}</IonLabel>
+                        </IonItem>
+                      ))
+                    ) : (
+                      <p>No POIs saved yet.</p>
+                    )}
+                  </IonList>
                 </>
               )}
             </div>
           </div>
         </div>
       </IonContent>
+
+      {/* Label Prompt */}
+      <IonAlert
+        isOpen={showLabelPrompt}
+        onDidDismiss={() => setShowLabelPrompt(false)}
+        header="Add Label"
+        inputs={[
+          {
+            name: "label",
+            type: "text",
+            placeholder: "Enter label for this location",
+          },
+        ]}
+        buttons={[
+          {
+            text: "Cancel",
+            role: "cancel",
+          },
+          {
+            text: "Save",
+            handler: (data) => {
+              if (markerCoords && data.label) {
+                savePOI(data.label, markerCoords[0], markerCoords[1]);
+              }
+            },
+          },
+        ]}
+      />
     </IonPage>
   );
 };
