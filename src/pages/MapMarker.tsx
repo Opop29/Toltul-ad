@@ -44,13 +44,37 @@ const MapMarker: React.FC = () => {
   const [markerColor, setMarkerColor] = useState<string>('#007cf0');
   const [markers, setMarkers] = useState<any[]>([]);
   const [showMarkersList, setShowMarkersList] = useState<boolean>(false);
+  const [selectedViewType, setSelectedViewType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const markTypeOptions = [
-    { label: 'Building', value: 'building' },
-    { label: 'Department', value: 'department' },
-    { label: 'Events', value: 'events' },
-    { label: 'Rooms', value: 'rooms' },
-    { label: 'Hazard', value: 'hazard' },
+    // Academic / Learning
+    { label: 'Academic - Building', value: 'academic-building' },
+    { label: 'Academic - Classroom / Lecture Hall', value: 'academic-classroom' },
+    { label: 'Academic - Laboratory', value: 'academic-laboratory' },
+    { label: 'Academic - Library', value: 'academic-library' },
+    { label: 'Academic - Auditorium / Hall', value: 'academic-auditorium' },
+    // Administrative
+    { label: 'Administrative - Administration Office', value: 'admin-office' },
+    { label: 'Administrative - Faculty / Department Offices', value: 'admin-faculty' },
+    { label: 'Administrative - Information Desk / Help Center', value: 'admin-info' },
+    // Student Facilities
+    { label: 'Student Facilities - Cafeteria / Dining Hall', value: 'student-cafeteria' },
+    { label: 'Student Facilities - Student Center / Lounge', value: 'student-center' },
+    // Health & Safety
+    { label: 'Health & Safety - Clinic / Health Center', value: 'health-clinic' },
+    { label: 'Health & Safety - Security / Police Post', value: 'health-security' },
+    { label: 'Health & Safety - Fire Exit / Safety Points', value: 'health-safety' },
+    // Events & Activities
+    { label: 'Events & Activities - Event / Meeting Room', value: 'events-room' },
+    { label: 'Events & Activities - Auditorium / Theater', value: 'events-auditorium' },
+    { label: 'Events & Activities - Outdoor Event Area', value: 'events-outdoor' },
+    // Transport & Access
+    { label: 'Transport & Access - Parking Lot', value: 'transport-parking' },
+    // Miscellaneous / Services
+    { label: 'Services - Wi-Fi Hotspot', value: 'services-wifi' },
+    { label: 'Services - Shops / Bookstore', value: 'services-shops' },
+    { label: 'Services - Restroom', value: 'services-restroom' },
   ];
 
 
@@ -188,6 +212,10 @@ const MapMarker: React.FC = () => {
   }, [is3D]);
 
   useEffect(() => {
+    addMarkersToMap(markers);
+  }, [selectedViewType, searchQuery, markers]);
+
+  useEffect(() => {
     if (!mapRef.current) return;
     const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
       if (!isAddingMarker) return;
@@ -229,12 +257,26 @@ const MapMarker: React.FC = () => {
    }
  };
 
+ const getFilteredMarkers = () => {
+   return markers.filter(marker => {
+     const matchesType = selectedViewType === 'all' || marker.mark_type.startsWith(selectedViewType);
+     const query = searchQuery.toLowerCase().trim();
+     const matchesSearch = query === '' ||
+       marker.label.toLowerCase().includes(query) ||
+       marker.mark_type.toLowerCase().includes(query) ||
+       marker.lat.toString().includes(query) ||
+       marker.lng.toString().includes(query);
+     return matchesType && matchesSearch;
+   });
+ };
+
  const addMarkersToMap = (markersData: any[]) => {
    if (!mapRef.current) return;
    // Remove existing markers
    markerRefs.current.forEach(marker => marker.remove());
    markerRefs.current = [];
-   markersData.forEach(marker => {
+   const filtered = getFilteredMarkers();
+   filtered.forEach(marker => {
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
      const mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
        .setLngLat([marker.lng, marker.lat])
@@ -321,6 +363,33 @@ const MapMarker: React.FC = () => {
                     />
                   </IonItem>
 
+                  <IonItem lines="none">
+                    <IonLabel>View Type</IonLabel>
+                    <IonSelect
+                      value={selectedViewType}
+                      placeholder="Select view type"
+                      onIonChange={(e) => setSelectedViewType(e.detail.value)}
+                    >
+                      <IonSelectOption value="all">View All</IonSelectOption>
+                      <IonSelectOption value="academic">Academic</IonSelectOption>
+                      <IonSelectOption value="admin">Administrative</IonSelectOption>
+                      <IonSelectOption value="student">Student Facilities</IonSelectOption>
+                      <IonSelectOption value="health">Health & Safety</IonSelectOption>
+                      <IonSelectOption value="events">Events & Activities</IonSelectOption>
+                      <IonSelectOption value="transport">Transport & Access</IonSelectOption>
+                      <IonSelectOption value="services">Services</IonSelectOption>
+                    </IonSelect>
+                  </IonItem>
+
+                  <IonItem lines="none">
+                    <IonLabel position="stacked">Search Markers</IonLabel>
+                    <IonInput
+                      value={searchQuery}
+                      placeholder="Search by label"
+                      onIonChange={(e) => setSearchQuery(e.detail.value!)}
+                    />
+                  </IonItem>
+
                   <IonButton expand="block" onClick={() => setIsAddingMarker(!isAddingMarker)}>
                     <IonIcon icon={isAddingMarker ? close : add} slot="start" />
                     {isAddingMarker ? 'Cancel Adding Marker' : 'Add Marker'}
@@ -334,7 +403,7 @@ const MapMarker: React.FC = () => {
 
                   {showMarkersList && (
                     <div className="markers-list">
-                      {markers.map(marker => (
+                      {getFilteredMarkers().map(marker => (
                         <div key={marker.id} className="marker-item">
                           <span className="marker-label">{marker.label}</span>
                           <IonButton
@@ -396,7 +465,7 @@ const MapMarker: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Color</IonLabel>
-            <IonInput value={markerColor} onIonChange={e => setMarkerColor(e.detail.value!)} placeholder="#007cf0" />
+            <input type="color" value={markerColor} onChange={e => setMarkerColor(e.target.value)} style={{width: '100%', height: '40px'}} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Latitude</IonLabel>

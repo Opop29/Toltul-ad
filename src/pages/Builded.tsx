@@ -37,11 +37,33 @@ const Builded: React.FC = () => {
   const [newMarkerLng, setNewMarkerLng] = useState<string>('');
 
   const markTypeOptions = [
-    { label: 'Building', value: 'building' },
-    { label: 'Department', value: 'department' },
-    { label: 'Events', value: 'events' },
-    { label: 'Rooms', value: 'rooms' },
-    { label: 'Hazard', value: 'hazard' },
+    // Academic / Learning
+    { label: 'Academic - Building', value: 'academic-building' },
+    { label: 'Academic - Classroom / Lecture Hall', value: 'academic-classroom' },
+    { label: 'Academic - Laboratory', value: 'academic-laboratory' },
+    { label: 'Academic - Library', value: 'academic-library' },
+    { label: 'Academic - Auditorium / Hall', value: 'academic-auditorium' },
+    // Administrative
+    { label: 'Administrative - Administration Office', value: 'admin-office' },
+    { label: 'Administrative - Faculty / Department Offices', value: 'admin-faculty' },
+    { label: 'Administrative - Information Desk / Help Center', value: 'admin-info' },
+    // Student Facilities
+    { label: 'Student Facilities - Cafeteria / Dining Hall', value: 'student-cafeteria' },
+    { label: 'Student Facilities - Student Center / Lounge', value: 'student-center' },
+    // Health & Safety
+    { label: 'Health & Safety - Clinic / Health Center', value: 'health-clinic' },
+    { label: 'Health & Safety - Security / Police Post', value: 'health-security' },
+    { label: 'Health & Safety - Fire Exit / Safety Points', value: 'health-safety' },
+    // Events & Activities
+    { label: 'Events & Activities - Event / Meeting Room', value: 'events-room' },
+    { label: 'Events & Activities - Auditorium / Theater', value: 'events-auditorium' },
+    { label: 'Events & Activities - Outdoor Event Area', value: 'events-outdoor' },
+    // Transport & Access
+    { label: 'Transport & Access - Parking Lot', value: 'transport-parking' },
+    // Miscellaneous / Services
+    { label: 'Services - Wi-Fi Hotspot', value: 'services-wifi' },
+    { label: 'Services - Shops / Bookstore', value: 'services-shops' },
+    { label: 'Services - Restroom', value: 'services-restroom' },
   ];
 
   useEffect(() => {
@@ -362,7 +384,7 @@ const handleSaveNewMarker = async () => {
               <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
             ))}
           </IonSelect>
-          <IonInput value={newMarkerColor} onIonChange={e => setNewMarkerColor(e.detail.value!)} placeholder="#007cf0" />
+          <input type="color" value={newMarkerColor} onChange={e => setNewMarkerColor(e.target.value)} style={{width: '100%', height: '40px'}} />
           <IonInput type="number" value={newMarkerLat} onIonChange={e => setNewMarkerLat(e.detail.value!)} placeholder="Latitude" />
           <IonInput type="number" value={newMarkerLng} onIonChange={e => setNewMarkerLng(e.detail.value!)} placeholder="Longitude" />
           <IonButton expand="full" onClick={handleSaveNewMarker} color="primary">
