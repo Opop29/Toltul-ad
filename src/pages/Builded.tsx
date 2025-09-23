@@ -20,6 +20,7 @@ const Builded: React.FC = () => {
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString());
+  const [mapLocation, setMapLocation] = useState<POI | null>(null);
 
   useEffect(() => {
     fetchPois();
@@ -219,7 +220,7 @@ async function deleteAll() {
                     <div className="poi-actions">
                       <button className="btn view" onClick={() => setSelected(p)}>Details</button>
                       <button className="btn edit" onClick={() => setSelected({ ...p, editing: true })}>Edit</button>
-                      <button className="btn coords" onClick={() => window.open(`https://www.google.com/maps?q=${p.lat},${p.lng}`, "_blank")}>View</button>
+                      <button className="btn view" onClick={() => setMapLocation(p)}>View</button>
                       <button className="btn danger" onClick={() => deletePoi(p)}>Delete</button>
                     </div>
                   </div>
@@ -231,10 +232,21 @@ async function deleteAll() {
           <div className="map-container">
             <div className="builded-card">
               <h3>Map View</h3>
-              <div style={{height: '400px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <p>Google Map integration placeholder</p>
-                <p>Select a marker to view on map</p>
-              </div>
+              {mapLocation ? (
+                <iframe
+                  src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11.html?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}#15/${mapLocation.lat}/${mapLocation.lng}`}
+                  width="100%"
+                  height="400"
+                  style={{border:0}}
+                  allowFullScreen
+                  loading="lazy"
+                ></iframe>
+              ) : (
+                <div style={{height: '400px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <p>Google Map integration placeholder</p>
+                  <p>Select a marker to view on map</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="calendar-container">
