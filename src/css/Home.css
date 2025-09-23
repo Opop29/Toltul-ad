@@ -82,6 +82,144 @@
   margin: 8px 12px;
 }
 
+/* Sidebar Menu Styles */
+.sidebar-menu {
+  --width: 320px;
+  --background: linear-gradient(180deg, #0b2e66 0%, #1a365d 50%, #2d3748 100%);
+  --border-radius: 0;
+}
+
+.sidebar-header {
+  padding: 0;
+  background: linear-gradient(135deg, #0b2e66 0%, #1a365d 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  padding: 24px 20px;
+  gap: 16px;
+}
+
+.sidebar-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-brand-text {
+  flex: 1;
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar-content {
+  --background: transparent;
+  padding: 0;
+}
+
+.sidebar-welcome {
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.welcome-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+}
+
+.sidebar-nav {
+  background: transparent;
+  padding: 16px 0;
+}
+
+.sidebar-nav-item {
+  --background: rgba(255, 255, 255, 0.08);
+  --background-hover: rgba(255, 255, 255, 0.12);
+  --background-activated: rgba(255, 255, 255, 0.15);
+  --color: #ffffff;
+  --border-radius: 12px;
+  margin: 6px 16px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav-item:hover {
+  --background: rgba(255, 255, 255, 0.12);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-nav-item ion-icon {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+}
+
+.sidebar-nav-item ion-label {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 16px;
+  background: linear-gradient(180deg, rgba(45, 55, 72, 0.9) 0%, rgba(45, 55, 72, 1) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logout-btn {
+  --background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  --background-hover: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  --border-radius: 12px;
+  --color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  border: none;
+  height: 48px;
+}
+
+.sidebar-logout-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
 /* Global blur overlay used during logout */
 .global-blur {
   position: fixed;

@@ -33,48 +33,53 @@ const AppMenu: React.FC = () => {
   };
 
   return (
-    <IonMenu contentId="main" side="start">
-      <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle>Menu</IonTitle>
-        </IonToolbar>
+    <IonMenu contentId="main" side="start" className="sidebar-menu">
+      <IonHeader className="sidebar-header">
+        <div className="sidebar-brand">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU"
+            alt="Toltula-AR Logo"
+            className="sidebar-logo"
+          />
+          <div className="sidebar-brand-text">
+            <h1 className="sidebar-title">Toltula-AR</h1>
+            <p className="sidebar-subtitle">Augmented Reality Platform</p>
+          </div>
+        </div>
       </IonHeader>
-      <IonContent className="ion-padding home-menu">
+      <IonContent className="sidebar-content">
         {loggingOut && <div className="global-blur" />}
         <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
-        <div className="menu-header ion-text-center">
-          <IonAvatar className="menu-avatar">
-            <img src="https://i.pravatar.cc/150?img=13" alt="User" />
-          </IonAvatar>
-          <h2 className="menu-title">🎉 Welcome</h2>
-          <p className="menu-subtitle">You are signed in</p>
+        <div className="sidebar-welcome">
+          <h3 className="welcome-title">🎉 Welcome Back!</h3>
+          <p className="welcome-subtitle">You are successfully signed in</p>
         </div>
 
-        <IonList className="menu-list">
-          <IonItem routerLink="/Toltul-ad/home" button detail={false} lines="full" className="menu-item">
+        <IonList className="sidebar-nav">
+          <IonItem routerLink="/Toltul-ad/home" button detail={false} lines="none" className="sidebar-nav-item">
             <IonIcon slot="start" icon={homeOutline} />
-            <IonLabel>Home</IonLabel>
+            <IonLabel>Home Dashboard</IonLabel>
           </IonItem>
-          <IonItem routerLink="/Toltul-ad/MapMarker" button detail={false} lines="full" className="menu-item">
+          <IonItem routerLink="/Toltul-ad/MapMarker" button detail={false} lines="none" className="sidebar-nav-item">
             <IonIcon slot="start" icon={addCircleOutline} />
-            <IonLabel>MapMarker</IonLabel>
+            <IonLabel>Create Markers</IonLabel>
           </IonItem>
-          <IonItem routerLink="/Toltul-ad/builded" button detail={false} lines="full" className="menu-item">
+          <IonItem routerLink="/Toltul-ad/builded" button detail={false} lines="none" className="sidebar-nav-item">
             <IonIcon slot="start" icon={constructOutline} />
-            <IonLabel>Builded</IonLabel>
+            <IonLabel>Manage Markers</IonLabel>
           </IonItem>
-          <IonItem routerLink="/Toltul-ad/report" button detail={false} lines="none" className="menu-item">
+          <IonItem routerLink="/Toltul-ad/report" button detail={false} lines="none" className="sidebar-nav-item">
             <IonIcon slot="start" icon={barChartOutline} />
-            <IonLabel>Report</IonLabel>
+            <IonLabel>Reports & Analytics</IonLabel>
           </IonItem>
         </IonList>
 
-        <div style={{ height: 24 }} />
-
-        <IonButton expand="block" color="danger" onClick={handleLogout} disabled={loggingOut}>
-          <IonIcon slot="start" icon={logOutOutline} />
-          Logout
-        </IonButton>
+        <div className="sidebar-footer">
+          <IonButton expand="full" color="danger" onClick={handleLogout} disabled={loggingOut} className="sidebar-logout-btn">
+            <IonIcon slot="start" icon={logOutOutline} />
+            Sign Out
+          </IonButton>
+        </div>
       </IonContent>
     </IonMenu>
   );
