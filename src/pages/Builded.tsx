@@ -266,6 +266,11 @@ const Builded: React.FC = () => {
       setSelected(null);
       setMapLocation(null);
       console.log('Delete operation completed');
+
+      // Automatic page refresh after delete
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (err) {
       console.error('Delete operation failed with exception:', err);
       alert('Failed to delete marker. Please check console for details.');
@@ -363,6 +368,11 @@ const Builded: React.FC = () => {
     setSelectAll(false);
     setSelected(null);
     setMapLocation(null);
+
+    // Automatic page refresh after delete
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   } catch (err) {
     console.error('Delete selected operation failed:', err);
     alert('Failed to delete selected markers. Please try again.');
@@ -391,6 +401,11 @@ async function deleteAll() {
     setSelectAll(false);
     setSelected(null);
     setMapLocation(null);
+
+    // Automatic page refresh after delete
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   } catch (err) {
     console.error('Delete all operation failed:', err);
     alert('Failed to delete all markers. Please try again.');
@@ -416,21 +431,44 @@ async function deleteAll() {
                 <>
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16}}>
                     <h3>All Saved Markers</h3>
-                    <button className="btn" onClick={() => setShowCalendarView(true)} style={{padding: '8px', background: 'transparent', color: '#007cf0', border: '1px solid #007cf0'}}>
-                      📅
-                    </button>
+                    <div style={{display: 'flex', gap: '8px'}}>
+                      <button className="btn" onClick={() => setShowCalendarView(true)} style={{padding: '8px 12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '0.9rem'}}>
+                        📅 View Calendar
+                      </button>
+                    </div>
                   </div>
-                  <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:12}}>
-                    <div style={{display:'flex', gap:8}}>
-                      <label><input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} /> Permanent</label>
-                      <label><input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} /> Groups</label>
-                      <label><input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} /> Dated</label>
+  
+                  {/* Filter Options */}
+                  <div style={{background: 'linear-gradient(135deg, rgba(0, 124, 240, 0.05) 0%, rgba(0, 124, 240, 0.02) 100%)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(0, 124, 240, 0.08)'}}>
+                    <h4 style={{margin: '0 0 12px 0', color: '#2d3748', fontSize: '1rem', fontWeight: '600'}}>View Options</h4>
+                    <div style={{display:'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showPermanentMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showPermanentMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                        <input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} style={{margin: 0}} />
+                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Permanent Marks</span>
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showGroupMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showGroupMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                        <input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} style={{margin: 0}} />
+                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Group Marks</span>
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showDatedMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showDatedMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                        <input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} style={{margin: 0}} />
+                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Dated Marks</span>
+                      </label>
                     </div>
-                    <div style={{display:'flex',gap:8}}>
-                      <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
-                      <button className="btn danger" onClick={() => handleDeleteClick('all', undefined, pois.length)}>Delete All</button>
-                      <button className="btn danger" onClick={() => handleDeleteClick('selected', undefined, checkedIds.length)} disabled={checkedIds.length === 0}>Delete Selected</button>
-                    </div>
+                  </div>
+  
+                  {/* Action Buttons */}
+                  <div style={{display:'flex', flexWrap: 'wrap', gap:8, marginBottom:12}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '8px 12px', background: 'rgba(255,255,255,0.9)', borderRadius: '8px', border: selectAll ? '2px solid #007cf0' : '2px solid #e2e8f0'}}>
+                      <input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} style={{margin: 0}} />
+                      <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Select All</span>
+                    </label>
+                    <button className="btn danger" onClick={() => handleDeleteClick('all', undefined, pois.length)} style={{padding: '8px 16px'}}>
+                      🗑️ Delete All
+                    </button>
+                    <button className="btn danger" onClick={() => handleDeleteClick('selected', undefined, checkedIds.length)} disabled={checkedIds.length === 0} style={{padding: '8px 16px'}}>
+                      🗑️ Delete Selected ({checkedIds.length})
+                    </button>
                   </div>
                   <div className="poi-list">
                     {getFilteredPois().map((item, index) => {
@@ -736,7 +774,7 @@ async function deleteAll() {
                         <button className="btn danger" onClick={() => handleDeleteClick('group', selected)}>
                           Delete Entire Group
                         </button>
-                        <button className="btn" onClick={() => setSelected({ ...selected, editing: false })}>
+                        <button className="btn" onClick={() => setSelected(null)}>
                           Cancel
                         </button>
                       </div>
@@ -850,7 +888,7 @@ async function deleteAll() {
                         <button className="btn danger" onClick={() => handleDeleteClick('single', selected)}>
                           Delete Marker
                         </button>
-                        <button className="btn" onClick={() => setSelected({ ...selected, editing: false })}>
+                        <button className="btn" onClick={() => setSelected(null)}>
                           Cancel
                         </button>
                       </div>
@@ -1166,7 +1204,9 @@ async function deleteAll() {
             });
             if (error) {
               console.error('Error saving marker:', error);
+              alert('Failed to save marker. Please try again.');
             } else {
+              console.log('Marker saved successfully');
               setShowAddModal(false);
               setNewMarkerLabel('');
               setNewMarkerMarkType('');
@@ -1174,6 +1214,11 @@ async function deleteAll() {
               setNewMarkerLat('');
               setNewMarkerLng('');
               fetchPois();
+
+              // Automatic page refresh after adding marker
+              setTimeout(() => {
+                window.location.reload();
+              }, 500);
             }
           }} color="primary">
             <IonIcon icon={checkmark} slot="start" />
