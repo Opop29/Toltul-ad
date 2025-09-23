@@ -3,9 +3,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime, IonModal, IonInput, IonSelect, IonSelectOption, IonIcon, IonButton } from "@ionic/react";
 import { checkmark, close } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
-import pinIcon from '../assets/3d-pin.svg';
-import pinAdvancedIcon from '../assets/3d-pin-advanced.svg';
-import pinMarkerIcon from '../assets/3d-pin-marker.svg';
 import { supabase } from "../utils/supabaseClient";
 import "../css/Builded.css";
 
