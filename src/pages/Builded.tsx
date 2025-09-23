@@ -1,6 +1,10 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime } from "@ionic/react";
+import mapboxgl from 'mapbox-gl';
+import pinIcon from '../assets/3d-pin.svg';
+import pinAdvancedIcon from '../assets/3d-pin-advanced.svg';
+import pinMarkerIcon from '../assets/3d-pin-marker.svg';
 import { supabase } from "../utils/supabaseClient";
 import "../css/Builded.css";
 
@@ -21,10 +25,45 @@ const Builded: React.FC = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString());
   const [mapLocation, setMapLocation] = useState<POI | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+
+  const getIconUrl = (icon: string) => {
+    switch (icon) {
+      case '/assets/3d-pin.svg':
+        return pinIcon;
+      case '/assets/3d-pin-advanced.svg':
+        return pinAdvancedIcon;
+      case '/assets/3d-pin-marker.svg':
+        return pinMarkerIcon;
+      default:
+        return icon;
+    }
+  };
 
   useEffect(() => {
     fetchPois();
   }, []);
+
+  useEffect(() => {
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+    if (mapLocation && mapContainer.current) {
+      mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [mapLocation.lng, mapLocation.lat],
+        zoom: 15
+      });
+
+      new mapboxgl.Marker()
+        .setLngLat([mapLocation.lng, mapLocation.lat])
+        .addTo(map.current);
+    }
+  }, [mapLocation]);
 
   async function fetchPois() {
     const { data, error } = await supabase
@@ -233,17 +272,10 @@ async function deleteAll() {
             <div className="builded-card">
               <h3>Map View</h3>
               {mapLocation ? (
-                <iframe
-                  src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11.html?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}#15/${mapLocation.lat}/${mapLocation.lng}`}
-                  width="100%"
-                  height="400"
-                  style={{border:0}}
-                  allowFullScreen
-                  loading="lazy"
-                ></iframe>
+                <div ref={mapContainer} style={{height: '400px'}} />
               ) : (
                 <div style={{height: '400px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                  <p>Google Map integration placeholder</p>
+                  <p>Map integration placeholder</p>
                   <p>Select a marker to view on map</p>
                 </div>
               )}
