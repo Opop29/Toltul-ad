@@ -162,6 +162,16 @@ const Home: React.FC = () => {
             <IonRefresherContent></IonRefresherContent>
           </IonRefresher>
 
+          {/* EPIC BACKGROUND ANIMATIONS */}
+          <div className="floating-shapes">
+            <div className="shape-1"></div>
+            <div className="shape-2"></div>
+            <div className="shape-3"></div>
+            <div className="shape-4"></div>
+            <div className="shape-5"></div>
+          </div>
+          <div className="wave-overlay"></div>
+
           {loggingOut && <div className="global-blur" />}
           <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
 
@@ -171,17 +181,20 @@ const Home: React.FC = () => {
             {/* Hero Section */}
             <div className="dashboard-section hero-section">
               <div className="home-hero">
-                <div className="hero-logo">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
-                </div>
-                <h1 className="home-title">
-                  <span className="title-main">🏛️ Toltul</span>
-                  <span className="title-accent">-AD</span>
-                </h1>
-                <div className="hero-taglines">
-                  <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
-                  <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
-                  <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
+                <div className="floating-particles"></div>
+                <div className="hero-content">
+                  <div className="hero-logo">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
+                  </div>
+                  <h1 className="home-title">
+                    <span className="title-main">🏛️ Toltul</span>
+                    <span className="title-accent">-AD</span>
+                  </h1>
+                  <div className="hero-taglines">
+                    <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
+                    <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
+                    <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
+                  </div>
                 </div>
               </div>
             </div>
