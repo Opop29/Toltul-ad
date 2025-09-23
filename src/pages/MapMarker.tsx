@@ -252,8 +252,10 @@ const MapMarker: React.FC = () => {
      el.style.width = '30px';
      el.style.height = '30px';
      el.style.backgroundSize = 'cover';
+     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
      const mapMarker = new mapboxgl.Marker({ element: el })
        .setLngLat([marker.lng, marker.lat])
+       .setPopup(popup)
        .addTo(mapRef.current!);
      markerRefs.current.push(mapMarker);
    });
@@ -334,10 +336,11 @@ const MapMarker: React.FC = () => {
                     />
                   </IonItem>
 
-                  <IonButton expand="block" onClick={() => setIsAddingMarker(true)}>
-                    <IonIcon icon={add} slot="start" />
-                    Add Marker
+                  <IonButton expand="block" onClick={() => setIsAddingMarker(!isAddingMarker)}>
+                    <IonIcon icon={isAddingMarker ? close : add} slot="start" />
+                    {isAddingMarker ? 'Cancel Adding Marker' : 'Add Marker'}
                   </IonButton>
+                  {isAddingMarker && <p style={{ textAlign: 'center', color: 'red' }}>Click on the map to place a marker</p>}
 
                 </>
               )}
