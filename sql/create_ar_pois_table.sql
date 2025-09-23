@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS public.ar_pois (
   label TEXT NOT NULL,
   mark_type TEXT NOT NULL,
   color TEXT DEFAULT '#007cf0',
-  height INTEGER DEFAULT 1
+  height INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable Row Level Security (RLS) if needed

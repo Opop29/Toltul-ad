@@ -326,17 +326,32 @@ const MapMarker: React.FC = () => {
             <div ref={mapContainerRef} className="map-container"></div>
           </div>
 
+          {/* Toggle button - position changes based on options visibility */}
+          <IonButton
+            className="slide-toggle-btn"
+            onClick={() => setShowOptions(!showOptions)}
+            fill="clear"
+            style={{
+              position: 'absolute',
+              left: showOptions ? 'calc(280px + 20px)' : '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 20,
+              background: 'linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%)',
+              borderRadius: '50%',
+              width: '50px',
+              height: '50px',
+              boxShadow: '0 4px 16px rgba(33, 150, 243, 0.3)',
+              border: '1px solid rgba(33, 150, 243, 0.1)',
+              transition: 'all 0.3s ease-in-out'
+            }}
+          >
+            <IonIcon icon={showOptions ? chevronBack : chevronForward} color="primary" />
+          </IonButton>
+
           {/* Slide Options Container */}
           <div className={`options-wrapper ${showOptions ? "open" : "closed"}`}>
             <div className="options-card">
-              {/* Slide toggle button inside */}
-              <IonButton
-                className="slide-toggle-btn"
-                onClick={() => setShowOptions(!showOptions)}
-                fill="clear"
-              >
-                <IonIcon icon={showOptions ? chevronForward : chevronBack} />
-              </IonButton>
 
               {showOptions && (
                 <>
@@ -496,4 +511,3 @@ const MapMarker: React.FC = () => {
 };
 
 export default MapMarker;
-
