@@ -45,6 +45,7 @@ const MapMarker: React.FC = () => {
   const [markerLabel, setMarkerLabel] = useState<string>('');
   const [markerIcon, setMarkerIcon] = useState<string>('');
   const [markers, setMarkers] = useState<any[]>([]);
+  const [showMarkersList, setShowMarkersList] = useState<boolean>(false);
 
   const iconOptions = [
     { label: 'Pin', value: pinIcon },
@@ -55,13 +56,13 @@ const MapMarker: React.FC = () => {
   const getIconUrl = (icon: string) => {
     switch (icon) {
       case '/assets/3d-pin.svg':
-        return pinIcon;
+        return pinIcon; 
       case '/assets/3d-pin-advanced.svg':
         return pinAdvancedIcon;
       case '/assets/3d-pin-marker.svg':
         return pinMarkerIcon;
       default:
-        return icon; // fallback
+        return icon; 
     }
   };
 
@@ -252,9 +253,7 @@ const MapMarker: React.FC = () => {
      el.style.width = '30px';
      el.style.height = '30px';
      el.style.backgroundSize = 'cover';
-     el.style.transform = 'perspective(50px) rotateX(15deg)'; // 3D effect
-     el.style.transformOrigin = 'bottom center';
-     el.setAttribute('aria-label', 'Map marker'); // Accessibility
+     el.setAttribute('aria-label', 'Map marker'); 
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
      const mapMarker = new mapboxgl.Marker({ element: el })
        .setLngLat([marker.lng, marker.lat])
@@ -345,6 +344,36 @@ const MapMarker: React.FC = () => {
                   </IonButton>
                   {isAddingMarker && <p style={{ textAlign: 'center', color: 'red' }}>Click on the map to place a marker</p>}
 
+                  <IonButton expand="block" onClick={() => setShowMarkersList(!showMarkersList)}>
+                    <IonIcon icon={showMarkersList ? chevronBack : chevronForward} slot="start" />
+                    {showMarkersList ? 'Hide Markers' : 'View All Markers'}
+                  </IonButton>
+
+                  {showMarkersList && (
+                    <div className="markers-list">
+                      {markers.map(marker => (
+                        <div key={marker.id} className="marker-item">
+                          <span className="marker-label">{marker.label}</span>
+                          <IonButton
+                            size="small"
+                            onClick={() => {
+                              if (mapRef.current) {
+                                mapRef.current.flyTo({
+                                  center: [marker.lng, marker.lat],
+                                  zoom: 18,
+                                  duration: 2000,
+                                  essential: true,
+                                });
+                              }
+                            }}
+                          >
+                            View
+                          </IonButton>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                 </>
               )}
             </div>
@@ -411,3 +440,4 @@ const MapMarker: React.FC = () => {
 };
 
 export default MapMarker;
+
