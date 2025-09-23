@@ -149,9 +149,14 @@
 
 .poi-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 8px;
   margin-top: auto;
+}
+
+.poi-actions .btn.danger {
+  grid-column: span 1;
+  min-height: 36px;
 }
 
 .btn {
@@ -190,6 +195,22 @@
 
 .btn.danger {
   background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn.danger:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn.danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .empty {
@@ -227,6 +248,18 @@
   font-size: 0.95rem;
 }
 
+/* Button layouts for different sections */
+.details-container .btn,
+.edit-container .btn {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.details-container .btn:last-child,
+.edit-container .btn:last-child {
+  margin-right: 0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .builded-wrap {
@@ -246,6 +279,15 @@
 
   .list-container .builded-card {
     height: 300px;
+  }
+
+  .poi-actions {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .poi-actions .btn {
+    min-height: 40px;
   }
 }
 

@@ -55,6 +55,13 @@ const Builded: React.FC = () => {
   const [markTypeOptions, setMarkTypeOptions] = useState<any[]>([]);
   const [showCalendarView, setShowCalendarView] = useState<boolean>(false);
   const [selectedDateMarkers, setSelectedDateMarkers] = useState<POI[]>([]);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    type: 'single' | 'group' | 'selected' | 'all';
+    item?: POI | GroupItem;
+    count?: number;
+  }>({ isOpen: false, type: 'single' });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getFilteredPois = (): DisplayItem[] => {
     const filtered = pois.filter(p => {
@@ -64,13 +71,11 @@ const Builded: React.FC = () => {
       return true;
     });
 
-    // Group markers by base group name (everything before the last #)
     const grouped = new Map<string, POI[]>();
     const individual: POI[] = [];
 
     filtered.forEach(p => {
       if (p.group_name) {
-        // Extract base name by removing everything after the last #
         const baseName = p.group_name.replace(/ #\d+$/, '');
         if (!grouped.has(baseName)) {
           grouped.set(baseName, []);
@@ -80,12 +85,10 @@ const Builded: React.FC = () => {
         individual.push(p);
       }
     });
-
-    // Convert groups to group objects
     const groupItems: GroupItem[] = Array.from(grouped.entries()).map(([baseName, group]) => ({
       isGroup: true,
       group_name: baseName,
-      group_index: 0, // Not used for display anymore
+      group_index: 0,
       color: group[0].color,
       mark_type: group[0].mark_type,
       markers: group,
@@ -126,7 +129,7 @@ const Builded: React.FC = () => {
       });
 
       if ('isGroup' in mapLocation && mapLocation.isGroup) {
-        // Display all markers in the group
+      
         const groupItem = mapLocation as unknown as GroupItem;
         groupItem.markers.forEach((marker: POI, index: number) => {
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}<br>Group: ${groupItem.group_name}`);
@@ -152,12 +155,12 @@ const Builded: React.FC = () => {
             .addTo(map.current!);
         });
       } else if (!('isGroup' in mapLocation) || !mapLocation.isGroup) {
-        // Single marker display
+       
         const marker = mapLocation as POI;
         const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}${marker.group_name ? `<br>Group: ${marker.group_name}` : ''}`);
 
         if (marker.group_index) {
-          // For group markers, use custom element with number
+        
           const el = document.createElement('div');
           el.style.backgroundColor = marker.color || '#007cf0';
           el.style.width = '30px';
@@ -177,7 +180,6 @@ const Builded: React.FC = () => {
             .setPopup(popup)
             .addTo(map.current);
         } else {
-          // For other markers, use default marker
           new mapboxgl.Marker({ color: marker.color || '#007cf0' })
             .setLngLat([marker.lng, marker.lat])
             .setPopup(popup)
@@ -192,9 +194,10 @@ const Builded: React.FC = () => {
       .from("ar_pois")
       .select("id, lat, lng, label, mark_type, color, height, dates, group_name, group_index");
     if (error) {
-      console.error(error);
+      console.error('Error fetching POIs:', error);
       return;
     }
+    console.log('Fetched POIs:', data?.length || 0, 'markers');
     setPois((data as POI[]) || []);
   }
 
@@ -229,17 +232,47 @@ const Builded: React.FC = () => {
   }
 
   async function deletePoi(p: POI) {
-  if (!p.id) return;
-  await supabase
-    .from("ar_pois")
-    .delete()
-    .eq("id", p.id);
-  fetchPois();
-  setSelected(null);
-}
+    console.log('deletePoi called with:', p);
+    if (!p.id) {
+      console.error('No ID provided for deletion');
+      return;
+    }
+
+    try {
+      console.log('Attempting to delete marker with ID:', p.id, 'Label:', p.label);
+
+      const { data, error } = await supabase
+        .from("ar_pois")
+        .delete()
+        .eq("id", p.id)
+        .select(); // Add select to see what was deleted
+
+      console.log('Supabase delete response - data:', data, 'error:', error);
+
+      if (error) {
+        console.error('Supabase error deleting marker:', error);
+        alert(`Failed to delete marker: ${error.message}`);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        console.log('Marker deleted successfully:', data[0]);
+      } else {
+        console.warn('No marker was deleted - marker may not exist');
+      }
+
+      console.log('Refreshing POI list...');
+      await fetchPois();
+      setSelected(null);
+      setMapLocation(null);
+      console.log('Delete operation completed');
+    } catch (err) {
+      console.error('Delete operation failed with exception:', err);
+      alert('Failed to delete marker. Please check console for details.');
+    }
+  }
 
 
-  // Select all checkbox handler
   useEffect(() => {
     if (selectAll) {
       const allIds: number[] = [];
@@ -260,27 +293,108 @@ const Builded: React.FC = () => {
     setCheckedIds(prev => prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]);
   };
 
+  const handleDeleteClick = (type: 'single' | 'group' | 'selected' | 'all', item?: POI | GroupItem, count?: number) => {
+    console.log('Delete clicked:', type, item ? (item as any).id || (item as any).group_name : 'no item', count);
+    setDeleteModal({ isOpen: true, type, item, count });
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      console.log('Starting delete operation:', deleteModal.type, deleteModal.item);
+
+      switch (deleteModal.type) {
+        case 'single':
+          if (deleteModal.item) {
+            const marker = deleteModal.item as POI;
+            console.log('Deleting single marker:', marker.id, marker.label);
+            await deletePoi(marker);
+          }
+          break;
+        case 'group':
+          if (deleteModal.item) {
+            const groupItem = deleteModal.item as GroupItem;
+            console.log('Deleting group:', groupItem.group_name, 'with', groupItem.markers.length, 'markers');
+
+            for (const marker of groupItem.markers) {
+              console.log('Deleting marker from group:', marker.id, marker.label);
+              await deletePoi(marker);
+            }
+            console.log('Group deletion completed');
+          }
+          break;
+        case 'selected':
+          console.log('Deleting selected markers');
+          await deleteSelected();
+          break;
+        case 'all':
+          console.log('Deleting all markers');
+          await deleteAll();
+          break;
+      }
+
+      console.log('Delete operation completed successfully');
+      setDeleteModal({ isOpen: false, type: 'single' });
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Delete operation failed. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
  async function deleteSelected() {
   if (checkedIds.length === 0) return;
-  await supabase
-    .from("ar_pois")
-    .delete()
-    .in("id", checkedIds);
-  fetchPois();
-  setCheckedIds([]);
-  setSelectAll(false);
+  try {
+    const { error } = await supabase
+      .from("ar_pois")
+      .delete()
+      .in("id", checkedIds);
+
+    if (error) {
+      console.error('Error deleting selected markers:', error);
+      alert('Failed to delete selected markers. Please try again.');
+      return;
+    }
+
+    console.log('Selected markers deleted successfully:', checkedIds);
+    fetchPois();
+    setCheckedIds([]);
+    setSelectAll(false);
+    setSelected(null);
+    setMapLocation(null);
+  } catch (err) {
+    console.error('Delete selected operation failed:', err);
+    alert('Failed to delete selected markers. Please try again.');
+  }
 }
 
 
 async function deleteAll() {
   if (pois.length === 0) return;
-  await supabase
-    .from("ar_pois")
-    .delete()
-    .in("id", pois.map(p => p.id ?? ""));
-  fetchPois();
-  setCheckedIds([]);
-  setSelectAll(false);
+  try {
+    const idsToDelete = pois.map(p => p.id!).filter(id => id !== undefined);
+    const { error } = await supabase
+      .from("ar_pois")
+      .delete()
+      .in("id", idsToDelete);
+
+    if (error) {
+      console.error('Error deleting all markers:', error);
+      alert('Failed to delete all markers. Please try again.');
+      return;
+    }
+
+    console.log('All markers deleted successfully:', idsToDelete.length, 'markers');
+    fetchPois();
+    setCheckedIds([]);
+    setSelectAll(false);
+    setSelected(null);
+    setMapLocation(null);
+  } catch (err) {
+    console.error('Delete all operation failed:', err);
+    alert('Failed to delete all markers. Please try again.');
+  }
 }
 
   return (
@@ -314,14 +428,14 @@ async function deleteAll() {
                     </div>
                     <div style={{display:'flex',gap:8}}>
                       <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
-                      <button className="btn danger" onClick={deleteAll}>Delete All</button>
-                      <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
+                      <button className="btn danger" onClick={() => handleDeleteClick('all', undefined, pois.length)}>Delete All</button>
+                      <button className="btn danger" onClick={() => handleDeleteClick('selected', undefined, checkedIds.length)} disabled={checkedIds.length === 0}>Delete Selected</button>
                     </div>
                   </div>
                   <div className="poi-list">
                     {getFilteredPois().map((item, index) => {
                       if ('isGroup' in item) {
-                        // Group item
+                        
                         return (
                           <div key={`group-${item.group_name}-${item.group_index}`} className="poi-item">
                             <div style={{position: 'absolute', top: '12px', right: '12px'}}>
@@ -344,12 +458,11 @@ async function deleteAll() {
                               <button className="btn view" onClick={() => setSelected(item.markers[0])}>Details</button>
                               <button className="btn edit" onClick={() => setSelected({ ...item.markers[0], editing: true })}>Edit</button>
                               <button className="btn view" onClick={() => setMapLocation(item)}>View</button>
-                              <button className="btn danger" onClick={() => item.markers.forEach(m => deletePoi(m))}>Delete</button>
+                              <button className="btn danger" onClick={() => handleDeleteClick('group', item)}>Delete</button>
                             </div>
                           </div>
                         );
                       } else {
-                        // Individual POI
                         return (
                           <div key={item.id} className="poi-item">
                             <div style={{position: 'absolute', top: '12px', right: '12px'}}>
@@ -366,7 +479,7 @@ async function deleteAll() {
                               <button className="btn view" onClick={() => setSelected(item)}>Details</button>
                               <button className="btn edit" onClick={() => setSelected({ ...item, editing: true })}>Edit</button>
                               <button className="btn view" onClick={() => setMapLocation(item)}>View</button>
-                              <button className="btn danger" onClick={() => deletePoi(item)}>Delete</button>
+                              <button className="btn danger" onClick={() => handleDeleteClick('single', item)}>Delete</button>
                             </div>
                           </div>
                         );
@@ -393,7 +506,6 @@ async function deleteAll() {
                         onIonChange={(e) => {
                           const date = e.detail.value as string;
                           setSelectedDate(date);
-                          // Filter markers for selected date
                           const dateObj = new Date(date);
                           const dateStr = dateObj.toISOString().split('T')[0];
                           const markersForDate = pois.filter(p =>
@@ -446,8 +558,7 @@ async function deleteAll() {
                     </button>
                   </div>
                   {'isGroup' in selected ? (
-                    // Group details
-                    <div>
+                   <div>
                       <div style={{padding: '16px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '12px', marginBottom: 16}}>
                         <p><strong>Group Name:</strong> {selected.group_name}</p>
                         <p><strong>Mark Type:</strong> {selected.mark_type}</p>
@@ -511,10 +622,10 @@ async function deleteAll() {
                       <div style={{marginTop:12}}>
                         <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit Group</button>
                         <button className="btn view" onClick={() => setMapLocation(selected.markers[0])} style={{marginLeft:8}}>View on Map</button>
+                        <button className="btn danger" onClick={() => handleDeleteClick('group', selected)} style={{marginLeft:8}}>Delete Group</button>
                       </div>
                     </div>
                   ) : (
-                    // Individual marker details
                     <div>
                       <div style={{padding: '16px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '12px', marginBottom: 16}}>
                         <p><strong>Mark Type:</strong> {selected.mark_type}</p>
@@ -523,7 +634,6 @@ async function deleteAll() {
                         <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
                         <p><strong>Height:</strong> {selected.height}m</p>
                         {selected.group_name && (() => {
-                          // Find the group this marker belongs to and count markers
                           const group = getFilteredPois().find(item =>
                             'isGroup' in item && item.markers.some(m => m.id === selected.id)
                           ) as GroupItem;
@@ -545,6 +655,7 @@ async function deleteAll() {
                       <div style={{marginTop:12}}>
                         <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit</button>
                         <button className="btn view" onClick={() => setMapLocation(selected)} style={{marginLeft:8}}>View on Map</button>
+                        <button className="btn danger" onClick={() => handleDeleteClick('single', selected)} style={{marginLeft:8}}>Delete Marker</button>
                       </div>
                     </div>
                   )}
@@ -560,8 +671,7 @@ async function deleteAll() {
                     </button>
                   </div>
                   {'isGroup' in selected ? (
-                    // Group editing - allow editing group properties or individual markers
-                    <div style={{display: 'grid', gap: 16}}>
+                   <div style={{display: 'grid', gap: 16}}>
                       <div>
                         <label>Select Marker to Edit</label>
                         <select
@@ -569,11 +679,9 @@ async function deleteAll() {
                           onChange={(e) => {
                             const markerIndex = parseInt(e.target.value);
                             if (markerIndex >= 0) {
-                              // Switch to editing individual marker
-                              setSelected({ ...selected.markers[markerIndex], editing: true });
+                             setSelected({ ...selected.markers[markerIndex], editing: true });
                             }
-                            // Reset select
-                            e.target.value = "-1";
+                             e.target.value = "-1";
                           }}
                         >
                           <option value="-1">Edit Group Properties</option>
@@ -617,8 +725,7 @@ async function deleteAll() {
                       </div>
                       <div style={{marginTop:20, display: 'flex', gap: 12}}>
                         <button className="btn primary" onClick={() => {
-                          // Update all markers in the group
-                          selected.markers.forEach((marker, index) => {
+                         selected.markers.forEach((marker, index) => {
                             const newGroupName = `${selected.group_name} #${index + 1}`;
                             updatePoi({ ...marker, mark_type: selected.mark_type, color: selected.color, group_name: newGroupName });
                           });
@@ -626,20 +733,21 @@ async function deleteAll() {
                         }}>
                           Save Group Changes
                         </button>
-                        <button className="btn danger" onClick={() => {
-                          selected.markers.forEach(marker => deletePoi(marker));
-                          setSelected(null);
-                        }}>
+                        <button className="btn danger" onClick={() => handleDeleteClick('group', selected)}>
                           Delete Entire Group
                         </button>
                         <button className="btn" onClick={() => setSelected({ ...selected, editing: false })}>
                           Cancel
                         </button>
                       </div>
+                      <div style={{marginTop:12, padding: '12px', background: 'rgba(255,107,107,0.08)', borderRadius: '8px', border: '1px solid rgba(255,107,107,0.2)'}}>
+                        <p style={{margin: 0, fontSize: '0.9rem', color: '#e53e3e', fontWeight: '500'}}>
+                          💡 <strong>Quick Delete:</strong> You can also delete this group directly from the details view above.
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    // Individual marker editing
-                    <div style={{display: 'grid', gap: 16}}>
+                   <div style={{display: 'grid', gap: 16}}>
                       {selected.group_name && (
                         <div>
                           <label>Switch to Edit Other Markers in Group</label>
@@ -648,21 +756,18 @@ async function deleteAll() {
                             onChange={(e) => {
                               const markerIndex = parseInt(e.target.value);
                               if (markerIndex >= 0) {
-                                // Find the group this marker belongs to
-                                const group = getFilteredPois().find(item =>
+                               const group = getFilteredPois().find(item =>
                                   'isGroup' in item && item.markers.some(m => m.id === selected.id)
                                 ) as GroupItem;
                                 if (group) {
                                   setSelected({ ...group.markers[markerIndex], editing: true });
                                 }
                               }
-                              // Reset select
                               e.target.value = "-1";
                             }}
                           >
                             <option value="-1">Select Marker to Edit</option>
                             {(() => {
-                              // Find markers in the same group
                               const group = getFilteredPois().find(item =>
                                 'isGroup' in item && item.markers.some(m => m.id === selected.id)
                               ) as GroupItem;
@@ -742,12 +847,17 @@ async function deleteAll() {
                         <button className="btn primary" onClick={() => updatePoi(selected)}>
                           Save Changes
                         </button>
-                        <button className="btn danger" onClick={() => deletePoi(selected)}>
+                        <button className="btn danger" onClick={() => handleDeleteClick('single', selected)}>
                           Delete Marker
                         </button>
                         <button className="btn" onClick={() => setSelected({ ...selected, editing: false })}>
                           Cancel
                         </button>
+                      </div>
+                      <div style={{marginTop:12, padding: '12px', background: 'rgba(255,107,107,0.08)', borderRadius: '8px', border: '1px solid rgba(255,107,107,0.2)'}}>
+                        <p style={{margin: 0, fontSize: '0.9rem', color: '#e53e3e', fontWeight: '500'}}>
+                          💡 <strong>Quick Delete:</strong> You can also delete this marker directly from the details view above.
+                        </p>
                       </div>
                     </div>
                   )}
@@ -771,12 +881,241 @@ async function deleteAll() {
         </div>
       </IonContent>
 
-      <IonModal isOpen={showAddModal} onDidDismiss={() => setShowAddModal(false)} onDidPresent={() => {
-        setTimeout(() => {
-          const input = document.querySelector('ion-input input') as HTMLInputElement;
-          if (input) input.focus();
-        }, 100);
-      }}>
+      {/* Professional Delete Confirmation Modal */}
+      <IonModal
+        isOpen={deleteModal.isOpen}
+        onDidDismiss={() => setDeleteModal({ isOpen: false, type: 'single' })}
+        className="delete-confirmation-modal"
+        backdropDismiss={false}
+        style={{
+          '--width': 'auto',
+          '--height': 'auto',
+          '--border-radius': '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <div style={{
+          padding: '32px',
+          background: 'white',
+          borderRadius: '16px',
+          margin: '20px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+          maxWidth: '450px',
+          position: 'relative'
+        }}>
+
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              boxShadow: '0 12px 32px rgba(238, 90, 82, 0.4)',
+              position: 'relative'
+            }}>
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <IonIcon icon={close} style={{ fontSize: '36px', color: 'white' }} />
+              </div>
+            </div>
+
+            <h2 style={{
+              margin: '0 0 12px 0',
+              color: '#1a202c',
+              fontSize: '1.75rem',
+              fontWeight: '700',
+              letterSpacing: '-0.025em'
+            }}>
+              Confirm Deletion
+            </h2>
+
+            <div style={{
+              padding: '16px 20px',
+              background: 'rgba(255,107,107,0.08)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,107,107,0.2)',
+              marginBottom: '8px'
+            }}>
+              <p style={{
+                margin: 0,
+                color: '#2d3748',
+                fontSize: '1.1rem',
+                fontWeight: '500',
+                lineHeight: '1.5'
+              }}>
+                {deleteModal.type === 'single' && deleteModal.item && (
+                  <>Are you sure you want to permanently delete <strong>"{(deleteModal.item as POI).label}"</strong>?</>
+                )}
+                {deleteModal.type === 'group' && deleteModal.item && (
+                  <>Are you sure you want to permanently delete the entire <strong>"{(deleteModal.item as GroupItem).group_name}"</strong> group containing <strong>{(deleteModal.item as GroupItem).markers.length} markers</strong>?</>
+                )}
+                {deleteModal.type === 'selected' && (
+                  <>Are you sure you want to permanently delete <strong>{deleteModal.count} selected marker(s)</strong>?</>
+                )}
+                {deleteModal.type === 'all' && (
+                  <>Are you sure you want to permanently delete <strong>ALL markers</strong>? This action cannot be undone.</>
+                )}
+              </p>
+            </div>
+
+            <p style={{
+              margin: '8px 0 0 0',
+              color: '#e53e3e',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              fontStyle: 'italic'
+            }}>
+              ⚠️ This action will permanently delete the data from the database and cannot be undone.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            justifyContent: 'center'
+          }}>
+            <button
+              onClick={() => setDeleteModal({ isOpen: false, type: 'single' })}
+              disabled={isDeleting}
+              style={{
+                padding: '14px 28px',
+                background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)',
+                color: '#4a5568',
+                border: '2px solid #e2e8f0',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '1rem',
+                cursor: isDeleting ? 'not-allowed' : 'pointer',
+                opacity: isDeleting ? 0.6 : 1,
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                minWidth: '120px'
+              }}
+              onMouseOver={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                }
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+              }}
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              style={{
+                padding: '14px 28px',
+                background: isDeleting ? '#9ca3af' : 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '1rem',
+                cursor: isDeleting ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                minWidth: '140px',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                boxShadow: isDeleting ? 'none' : '0 4px 16px rgba(238, 90, 82, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseOver={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(238, 90, 82, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isDeleting) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(238, 90, 82, 0.3)';
+                }
+              }}
+            >
+              {isDeleting ? (
+                <>
+                  <div style={{
+                    width: '18px',
+                    height: '18px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTop: '2px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <span>Deleting...</span>
+                </>
+              ) : (
+                <>
+                  <IonIcon icon={close} style={{ fontSize: '18px' }} />
+                  <span>Delete</span>
+                </>
+              )}
+
+              {/* Ripple effect */}
+              {!isDeleting && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: '0',
+                  height: '0',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.3)',
+                  transform: 'translate(-50%, -50%)',
+                  transition: 'width 0.6s, height 0.6s',
+                  pointerEvents: 'none'
+                }} className="ripple"></div>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
+          .delete-confirmation-modal .modal-wrapper {
+            --backdrop-opacity: 0.6;
+            backdrop-filter: blur(8px);
+          }
+
+          .delete-confirmation-modal ion-backdrop {
+            --backdrop-opacity: 0.6;
+            backdrop-filter: blur(8px);
+          }
+        `}</style>
+      </IonModal>
+
+    <IonModal isOpen={showAddModal} onDidDismiss={() => setShowAddModal(false)} onDidPresent={() => {
+      setTimeout(() => {
+        const input = document.querySelector('ion-input input') as HTMLInputElement;
+        if (input) input.focus();
+      }, 100);
+    }}>
         <IonHeader>
           <IonToolbar>
             <IonTitle>Add Marker</IonTitle>
