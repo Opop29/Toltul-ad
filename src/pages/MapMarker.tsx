@@ -252,6 +252,9 @@ const MapMarker: React.FC = () => {
      el.style.width = '30px';
      el.style.height = '30px';
      el.style.backgroundSize = 'cover';
+     el.style.transform = 'perspective(50px) rotateX(15deg)'; // 3D effect
+     el.style.transformOrigin = 'bottom center';
+     el.setAttribute('aria-label', 'Map marker'); // Accessibility
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Lat: ${marker.lat}<br>Lng: ${marker.lng}`);
      const mapMarker = new mapboxgl.Marker({ element: el })
        .setLngLat([marker.lng, marker.lat])
