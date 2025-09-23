@@ -65,41 +65,13 @@ const MapMarker: React.FC = () => {
   const [showPermanentMarks, setShowPermanentMarks] = useState<boolean>(true);
   const [showGroupMarks, setShowGroupMarks] = useState<boolean>(true);
   const [showDatedMarks, setShowDatedMarks] = useState<boolean>(true);
+  const [markTypeOptions, setMarkTypeOptions] = useState<any[]>([]);
   const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
   const [groupName, setGroupName] = useState<string>('');
   const [groupColor, setGroupColor] = useState<string>('#007cf0');
   const [groupMarkers, setGroupMarkers] = useState<any[]>([]);
   const [isAddingGroup, setIsAddingGroup] = useState<boolean>(false);
 
-  const markTypeOptions = [
-    // Academic / Learning
-    { label: 'Academic - Building', value: 'academic-building' },
-    { label: 'Academic - Classroom / Lecture Hall', value: 'academic-classroom' },
-    { label: 'Academic - Laboratory', value: 'academic-laboratory' },
-    { label: 'Academic - Library', value: 'academic-library' },
-    { label: 'Academic - Auditorium / Hall', value: 'academic-auditorium' },
-    // Administrative
-    { label: 'Administrative - Administration Office', value: 'admin-office' },
-    { label: 'Administrative - Faculty / Department Offices', value: 'admin-faculty' },
-    { label: 'Administrative - Information Desk / Help Center', value: 'admin-info' },
-    // Student Facilities
-    { label: 'Student Facilities - Cafeteria / Dining Hall', value: 'student-cafeteria' },
-    { label: 'Student Facilities - Student Center / Lounge', value: 'student-center' },
-    // Health & Safety
-    { label: 'Health & Safety - Clinic / Health Center', value: 'health-clinic' },
-    { label: 'Health & Safety - Security / Police Post', value: 'health-security' },
-    { label: 'Health & Safety - Fire Exit / Safety Points', value: 'health-safety' },
-    // Events & Activities
-    { label: 'Events & Activities - Event / Meeting Room', value: 'events-room' },
-    { label: 'Events & Activities - Auditorium / Theater', value: 'events-auditorium' },
-    { label: 'Events & Activities - Outdoor Event Area', value: 'events-outdoor' },
-    // Transport & Access
-    { label: 'Transport & Access - Parking Lot', value: 'transport-parking' },
-    // Miscellaneous / Services
-    { label: 'Services - Wi-Fi Hotspot', value: 'services-wifi' },
-    { label: 'Services - Shops / Bookstore', value: 'services-shops' },
-    { label: 'Services - Restroom', value: 'services-restroom' },
-  ];
 
 
   const [cameraState, setCameraState] = useState({
@@ -212,6 +184,7 @@ const MapMarker: React.FC = () => {
         enable3D();
       }
       loadMarkers(); // Load markers after map is loaded
+      loadMarkTypes(); // Load mark types
     });
 
     return () => {
@@ -286,6 +259,15 @@ const MapMarker: React.FC = () => {
    } else {
      setMarkers(data || []);
      addMarkersToMap(data || []);
+   }
+ };
+
+ const loadMarkTypes = async () => {
+   const { data, error } = await supabase.from('mark_types').select('value, label').order('label');
+   if (error) {
+     console.error('Error loading mark types:', error);
+   } else {
+     setMarkTypeOptions(data || []);
    }
  };
 
