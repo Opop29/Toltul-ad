@@ -19,7 +19,7 @@ import {
   IonTextarea,
   IonDatetime,
 } from '@ionic/react';
-import { chevronForward, chevronBack, add, close, checkmark } from 'ionicons/icons';
+import { chevronForward, chevronBack, add, close, checkmark, search } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from "../utils/supabaseClient";
@@ -324,10 +324,33 @@ const MapMarker: React.FC = () => {
    const filtered = getFilteredMarkers();
    filtered.forEach(marker => {
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}${marker.group_name ? `<br>Group: ${marker.group_name} #${marker.group_index}` : ''}`);
-     const mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
-       .setLngLat([marker.lng, marker.lat])
-       .setPopup(popup)
-       .addTo(mapRef.current!);
+     let mapMarker;
+     if (marker.group_index) {
+       // For group markers, use custom element with number
+       const el = document.createElement('div');
+       el.style.backgroundColor = marker.color || '#007cf0';
+       el.style.width = '30px';
+       el.style.height = '30px';
+       el.style.borderRadius = '50%';
+       el.style.border = '2px solid white';
+       el.style.display = 'flex';
+       el.style.alignItems = 'center';
+       el.style.justifyContent = 'center';
+       el.style.fontSize = '12px';
+       el.style.fontWeight = 'bold';
+       el.style.color = 'white';
+       el.textContent = marker.group_index.toString();
+       el.setAttribute('aria-label', 'Map marker');
+       mapMarker = new mapboxgl.Marker({ element: el })
+         .setLngLat([marker.lng, marker.lat])
+         .setPopup(popup);
+     } else {
+       // For other markers, use default marker
+       mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
+         .setLngLat([marker.lng, marker.lat])
+         .setPopup(popup);
+     }
+     mapMarker.addTo(mapRef.current!);
      markerRefs.current.push(mapMarker);
    });
  };
@@ -401,6 +424,28 @@ const MapMarker: React.FC = () => {
         <div className="map-layout">
           <div className="map-wrapper">
             <div ref={mapContainerRef} className="map-container"></div>
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              background: 'rgba(255,255,255,0.9)',
+              borderRadius: '20px',
+              padding: '5px 10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}>
+              <IonIcon icon={search} color="medium" />
+              <IonInput
+                value={searchQuery}
+                placeholder="Search markers..."
+                onIonChange={(e) => setSearchQuery(e.detail.value!)}
+                style={{width: '200px', '--placeholder-color': 'var(--ion-color-medium)'}}
+              />
+            </div>
           </div>
 
           {/* Toggle button - position changes based on options visibility */}
@@ -473,14 +518,6 @@ const MapMarker: React.FC = () => {
                     </IonSelect>
                   </IonItem>
 
-                  <IonItem lines="none">
-                    <IonLabel position="stacked">Search Markers</IonLabel>
-                    <IonInput
-                      value={searchQuery}
-                      placeholder="Search by label"
-                      onIonChange={(e) => setSearchQuery(e.detail.value!)}
-                    />
-                  </IonItem>
 
                   <IonButton expand="block" onClick={() => setIsAddingMarker(!isAddingMarker)}>
                     <IonIcon icon={isAddingMarker ? close : add} slot="start" />

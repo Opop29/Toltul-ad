@@ -69,9 +69,34 @@ const Builded: React.FC = () => {
         zoom: 15
       });
 
-      new mapboxgl.Marker({ color: mapLocation.color || '#007cf0' })
-        .setLngLat([mapLocation.lng, mapLocation.lat])
-        .addTo(map.current);
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${mapLocation.label}</strong><br>Lat: ${mapLocation.lat}<br>Lng: ${mapLocation.lng}${mapLocation.group_name ? `<br>Group: ${mapLocation.group_name} #${mapLocation.group_index}` : ''}`);
+      if (mapLocation.group_index) {
+        // For group markers, use custom element with number
+        const el = document.createElement('div');
+        el.style.backgroundColor = mapLocation.color || '#007cf0';
+        el.style.width = '30px';
+        el.style.height = '30px';
+        el.style.borderRadius = '50%';
+        el.style.border = '2px solid white';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.fontSize = '12px';
+        el.style.fontWeight = 'bold';
+        el.style.color = 'white';
+        el.textContent = mapLocation.group_index.toString();
+        el.setAttribute('aria-label', 'Map marker');
+        new mapboxgl.Marker({ element: el })
+          .setLngLat([mapLocation.lng, mapLocation.lat])
+          .setPopup(popup)
+          .addTo(map.current);
+      } else {
+        // For other markers, use default marker
+        new mapboxgl.Marker({ color: mapLocation.color || '#007cf0' })
+          .setLngLat([mapLocation.lng, mapLocation.lat])
+          .setPopup(popup)
+          .addTo(map.current);
+      }
     }
   }, [mapLocation]);
 
