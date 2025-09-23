@@ -165,203 +165,231 @@ const Home: React.FC = () => {
           {loggingOut && <div className="global-blur" />}
           <IonLoading isOpen={loggingOut} message="Signing out..." spinner="crescent" />
 
-          <div className="home-hero">
-            <div className="hero-logo">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
-            </div>
-            <h1 className="home-title">
-              <span className="title-main">🏛️ Toltul</span>
-              <span className="title-accent">-AD</span>
-            </h1>
-            <div className="hero-taglines">
-              <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
-              <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
-              <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
-            </div>
-          </div>
+          {/* Main Dashboard Container */}
+          <div className="dashboard-container">
 
-          {/* Key Stats Cards */}
-          <IonGrid className="stats-grid">
-            <IonRow>
-              <IonCol size="12" sizeMd="6" sizeLg="3">
-                <IonCard className="stat-card total-markers" onClick={() => navigateTo('/Toltul-ad/report')}>
-                  <IonCardContent>
-                    <div className="stat-icon">
-                      <IonIcon icon={locationOutline} />
-                    </div>
-                    <div className="stat-content">
-                      <h2>{stats?.totalMarkers || 0}</h2>
-                      <p>Total Markers</p>
-                    </div>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-
-              <IonCol size="12" sizeMd="6" sizeLg="3">
-                <IonCard className="stat-card marker-types" onClick={() => navigateTo('/Toltul-ad/report')}>
-                  <IonCardContent>
-                    <div className="stat-icon">
-                      <IonIcon icon={analyticsOutline} />
-                    </div>
-                    <div className="stat-content">
-                      <h2>{Object.keys(stats?.markersByType || {}).length}</h2>
-                      <p>Marker Types</p>
-                    </div>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-
-              <IonCol size="12" sizeMd="6" sizeLg="3">
-                <IonCard className="stat-card recent-activity" onClick={() => navigateTo('/Toltul-ad/builded')}>
-                  <IonCardContent>
-                    <div className="stat-icon">
-                      <IonIcon icon={timeOutline} />
-                    </div>
-                    <div className="stat-content">
-                      <h2>{stats?.recentMarkers.length || 0}</h2>
-                      <p>Recent Activity</p>
-                    </div>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-
-              <IonCol size="12" sizeMd="6" sizeLg="3">
-                <IonCard className="stat-card quick-actions">
-                  <IonCardContent>
-                    <div className="stat-icon">
-                      <IonIcon icon={addCircleOutline} />
-                    </div>
-                    <div className="stat-content">
-                      <h2>+</h2>
-                      <p>Quick Actions</p>
-                    </div>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-
-          {/* Map Display Section */}
-          <div className="home-section">
-            <div className="map-display-container">
-              <div className="map-display">
-                <div className="map-overlay">
-                  <div className="map-title">Interactive Campus Map</div>
-                  <div className="map-subtitle">Explore AR markers across the university</div>
+            {/* Hero Section */}
+            <div className="dashboard-section hero-section">
+              <div className="home-hero">
+                <div className="hero-logo">
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
                 </div>
-                <div className="map-grid">
-                  <div className="grid-line horizontal"></div>
-                  <div className="grid-line horizontal"></div>
-                  <div className="grid-line horizontal"></div>
-                  <div className="grid-line vertical"></div>
-                  <div className="grid-line vertical"></div>
-                  <div className="grid-line vertical"></div>
-                </div>
-                <div className="map-markers">
-                  <div className="map-marker-pulse" style={{top: '30%', left: '25%', animationDelay: '0s'}}></div>
-                  <div className="map-marker-pulse" style={{top: '45%', left: '60%', animationDelay: '1s'}}></div>
-                  <div className="map-marker-pulse" style={{top: '65%', left: '40%', animationDelay: '2s'}}></div>
-                  <div className="map-marker-pulse" style={{top: '25%', left: '70%', animationDelay: '0.5s'}}></div>
-                  <div className="map-marker-pulse" style={{top: '75%', left: '80%', animationDelay: '1.5s'}}></div>
+                <h1 className="home-title">
+                  <span className="title-main">🏛️ Toltul</span>
+                  <span className="title-accent">-AD</span>
+                </h1>
+                <div className="hero-taglines">
+                  <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
+                  <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
+                  <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Quick Actions Section */}
-          <div className="home-section">
-            <h2 className="section-title">🚀 Quick Actions</h2>
-            <IonGrid>
-              <IonRow>
-                <IonCol size="12" sizeMd="6">
-                  <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/MapMarker')}>
-                    <IonCardContent>
-                      <div className="action-content">
-                        <IonIcon icon={mapOutline} />
-                        <div>
-                          <h3>Add New Marker</h3>
-                          <p>Place AR markers on the interactive map</p>
-                        </div>
-                      </div>
-                      <IonIcon icon={addCircleOutline} className="action-arrow" />
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
+            {/* Stats Overview Section */}
+            <div className="dashboard-section stats-section">
+              <div className="section-header">
+                <h2 className="section-title">📊 System Overview</h2>
+                <p className="section-subtitle">Key metrics and statistics at a glance</p>
+              </div>
+              <div className="section-content">
+                <IonGrid className="stats-grid">
+                  <IonRow>
+                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                      <IonCard className="stat-card total-markers" onClick={() => navigateTo('/Toltul-ad/report')}>
+                        <IonCardContent>
+                          <div className="stat-icon">
+                            <IonIcon icon={locationOutline} />
+                          </div>
+                          <div className="stat-content">
+                            <h2>{stats?.totalMarkers || 0}</h2>
+                            <p>Total Markers</p>
+                          </div>
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
 
-                <IonCol size="12" sizeMd="6">
-                  <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/builded')}>
-                    <IonCardContent>
-                      <div className="action-content">
-                        <IonIcon icon={constructOutline} />
-                        <div>
-                          <h3>Manage Markers</h3>
-                          <p>View, edit, and organize your markers</p>
-                        </div>
-                      </div>
-                      <IonIcon icon={eyeOutline} className="action-arrow" />
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
+                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                      <IonCard className="stat-card marker-types" onClick={() => navigateTo('/Toltul-ad/report')}>
+                        <IonCardContent>
+                          <div className="stat-icon">
+                            <IonIcon icon={analyticsOutline} />
+                          </div>
+                          <div className="stat-content">
+                            <h2>{Object.keys(stats?.markersByType || {}).length}</h2>
+                            <p>Marker Types</p>
+                          </div>
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
 
-                <IonCol size="12" sizeMd="6">
-                  <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/report')}>
-                    <IonCardContent>
-                      <div className="action-content">
-                        <IonIcon icon={barChartOutline} />
-                        <div>
-                          <h3>View Analytics</h3>
-                          <p>Explore comprehensive reports and insights</p>
-                        </div>
-                      </div>
-                      <IonIcon icon={analyticsOutline} className="action-arrow" />
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
+                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                      <IonCard className="stat-card recent-activity" onClick={() => navigateTo('/Toltul-ad/builded')}>
+                        <IonCardContent>
+                          <div className="stat-icon">
+                            <IonIcon icon={timeOutline} />
+                          </div>
+                          <div className="stat-content">
+                            <h2>{stats?.recentMarkers.length || 0}</h2>
+                            <p>Recent Activity</p>
+                          </div>
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
 
-                <IonCol size="12" sizeMd="6">
-                  <IonCard className="action-card logout-card" onClick={handleLogout} disabled={loggingOut}>
-                    <IonCardContent>
-                      <div className="action-content">
-                        <IonIcon icon={logOutOutline} />
-                        <div>
-                          <h3>Logout</h3>
-                          <p>Securely sign out of your account</p>
-                        </div>
-                      </div>
-                      <IonIcon icon={logOutOutline} className="action-arrow" />
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </div>
-
-          {/* Recent Activity Section */}
-          {stats?.recentMarkers && stats.recentMarkers.length > 0 && (
-            <div className="home-section">
-              <h2 className="section-title">📅 Recent Activity</h2>
-              <div className="recent-activity">
-                {stats.recentMarkers.map((marker, index) => (
-                  <IonCard key={marker.id} className="activity-card" onClick={() => navigateTo('/Toltul-ad/builded')}>
-                    <IonCardContent>
-                      <div className="activity-content">
-                        <div className="activity-icon">
-                          <div
-                            className="marker-color-dot"
-                            style={{ backgroundColor: marker.color }}
-                          ></div>
-                        </div>
-                        <div className="activity-details">
-                          <h4>{marker.label}</h4>
-                          <p>{marker.mark_type} • {formatDate(marker.created_at)}</p>
-                        </div>
-                      </div>
-                    </IonCardContent>
-                  </IonCard>
-                ))}
+                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                      <IonCard className="stat-card quick-actions">
+                        <IonCardContent>
+                          <div className="stat-icon">
+                            <IonIcon icon={addCircleOutline} />
+                          </div>
+                          <div className="stat-content">
+                            <h2>+</h2>
+                            <p>Quick Actions</p>
+                          </div>
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+                  </IonRow>
+                </IonGrid>
               </div>
             </div>
-          )}
+
+            {/* Map Display Section */}
+            <div className="dashboard-section map-section">
+              <div className="section-content">
+                <div className="map-display-container">
+                  <div className="map-display">
+                    <div className="map-overlay">
+                      <div className="map-title">Interactive Campus Map</div>
+                      <div className="map-subtitle">Explore AR markers across the university</div>
+                    </div>
+                    <div className="map-grid">
+                      <div className="grid-line horizontal"></div>
+                      <div className="grid-line horizontal"></div>
+                      <div className="grid-line horizontal"></div>
+                      <div className="grid-line vertical"></div>
+                      <div className="grid-line vertical"></div>
+                      <div className="grid-line vertical"></div>
+                    </div>
+                    <div className="map-markers">
+                      <div className="map-marker-pulse" style={{top: '30%', left: '25%', animationDelay: '0s'}}></div>
+                      <div className="map-marker-pulse" style={{top: '45%', left: '60%', animationDelay: '1s'}}></div>
+                      <div className="map-marker-pulse" style={{top: '65%', left: '40%', animationDelay: '2s'}}></div>
+                      <div className="map-marker-pulse" style={{top: '25%', left: '70%', animationDelay: '0.5s'}}></div>
+                      <div className="map-marker-pulse" style={{top: '75%', left: '80%', animationDelay: '1.5s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Section */}
+            <div className="dashboard-section actions-section">
+              <div className="section-header">
+                <h2 className="section-title">🚀 Quick Actions</h2>
+                <p className="section-subtitle">Common administrative tasks and navigation</p>
+              </div>
+              <div className="section-content">
+                <IonGrid className="actions-grid">
+                  <IonRow>
+                    <IonCol size="12" sizeMd="6">
+                      <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/MapMarker')}>
+                        <IonCardContent>
+                          <div className="action-content">
+                            <IonIcon icon={mapOutline} />
+                            <div>
+                              <h3>Add New Marker</h3>
+                              <p>Place AR markers on the interactive map</p>
+                            </div>
+                          </div>
+                          <IonIcon icon={addCircleOutline} className="action-arrow" />
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+
+                    <IonCol size="12" sizeMd="6">
+                      <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/builded')}>
+                        <IonCardContent>
+                          <div className="action-content">
+                            <IonIcon icon={constructOutline} />
+                            <div>
+                              <h3>Manage Markers</h3>
+                              <p>View, edit, and organize your markers</p>
+                            </div>
+                          </div>
+                          <IonIcon icon={eyeOutline} className="action-arrow" />
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+
+                    <IonCol size="12" sizeMd="6">
+                      <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/report')}>
+                        <IonCardContent>
+                          <div className="action-content">
+                            <IonIcon icon={barChartOutline} />
+                            <div>
+                              <h3>View Analytics</h3>
+                              <p>Explore comprehensive reports and insights</p>
+                            </div>
+                          </div>
+                          <IonIcon icon={analyticsOutline} className="action-arrow" />
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+
+                    <IonCol size="12" sizeMd="6">
+                      <IonCard className="action-card logout-card" onClick={handleLogout} disabled={loggingOut}>
+                        <IonCardContent>
+                          <div className="action-content">
+                            <IonIcon icon={logOutOutline} />
+                            <div>
+                              <h3>Logout</h3>
+                              <p>Securely sign out of your account</p>
+                            </div>
+                          </div>
+                          <IonIcon icon={logOutOutline} className="action-arrow" />
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+                  </IonRow>
+                </IonGrid>
+              </div>
+            </div>
+
+            {/* Recent Activity Section */}
+            {stats?.recentMarkers && stats.recentMarkers.length > 0 && (
+              <div className="dashboard-section activity-section">
+                <div className="section-header">
+                  <h2 className="section-title">📅 Recent Activity</h2>
+                  <p className="section-subtitle">Latest marker additions and updates</p>
+                </div>
+                <div className="section-content">
+                  <div className="recent-activity">
+                    {stats.recentMarkers.map((marker, index) => (
+                      <IonCard key={marker.id} className="activity-card" onClick={() => navigateTo('/Toltul-ad/builded')}>
+                        <IonCardContent>
+                          <div className="activity-content">
+                            <div className="activity-icon">
+                              <div
+                                className="marker-color-dot"
+                                style={{ backgroundColor: marker.color }}
+                              ></div>
+                            </div>
+                            <div className="activity-details">
+                              <h4>{marker.label}</h4>
+                              <p>{marker.mark_type} • {formatDate(marker.created_at)}</p>
+                            </div>
+                          </div>
+                        </IonCardContent>
+                      </IonCard>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
         </IonContent>
       </IonPage>
     </>

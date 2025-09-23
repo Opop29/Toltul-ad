@@ -1,6 +1,6 @@
 .home-content {
   --background: linear-gradient(180deg, #0b2e66 0%, #1a365d 50%, #2d3748 100%);
-  padding: 0 16px;
+  padding: 10000px;
   position: relative;
   overflow: hidden;
 }
@@ -311,7 +311,66 @@
   letter-spacing: 0.5px;
 }
 
-/* Home Sections */
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Dashboard Sections */
+.dashboard-section {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.hero-section {
+  margin-bottom: 32px;
+}
+
+.stats-section,
+.map-section,
+.actions-section,
+.activity-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Headers */
+.section-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Section Content */
+.section-content {
+  position: relative;
+}
+
+/* Legacy support for old sections */
 .home-section {
   margin-bottom: 32px;
   position: relative;
@@ -931,6 +990,22 @@
 
 /* Responsive Design */
 @media (max-width: 576px) {
+  .dashboard-container {
+    padding: 0 12px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 24px;
+  }
+
+  .stats-section,
+  .map-section,
+  .actions-section,
+  .activity-section {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
   .home-hero {
     padding: 32px 16px 24px;
     margin: 16px 0;
@@ -967,6 +1042,18 @@
 
   .tagline-tertiary {
     font-size: 11px;
+  }
+
+  .section-header {
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .section-subtitle {
+    font-size: 12px;
   }
 
   .map-display {
