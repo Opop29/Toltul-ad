@@ -54,6 +54,27 @@
   border-radius: 50%;
   border: 2px solid white;
 }
+.custom-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker-dot {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid black;
+  border-radius: 50%;
+}
+
+.marker-label {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: black;
+  white-space: nowrap;
+}
 
 @media (max-width: 768px) {
   .options-wrapper {
@@ -71,6 +92,6 @@
   .options-card {
     width: 200px;
     border-radius: 20px;
-    padding: 20px;
+    padding: 10px;
   }
 }
