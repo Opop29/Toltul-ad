@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState, useRef } from "react";
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime, IonModal, IonInput, IonSelect, IonSelectOption, IonIcon, IonButton } from "@ionic/react";
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton, IonDatetime, IonModal, IonInput, IonSelect, IonSelectOption, IonIcon, IonButton, IonItem, IonLabel } from "@ionic/react";
 import { checkmark, close } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
 import { supabase } from "../utils/supabaseClient";
@@ -40,6 +39,14 @@ const Builded: React.FC = () => {
   const [showDatedMarks, setShowDatedMarks] = useState<boolean>(true);
   const [markTypeOptions, setMarkTypeOptions] = useState<any[]>([]);
 
+  const getFilteredPois = () => {
+    return pois.filter(p => {
+      if (!showPermanentMarks && !p.dates?.length) return false;
+      if (!showGroupMarks && p.group_name) return false;
+      if (!showDatedMarks && p.dates?.length) return false;
+      return true;
+    });
+  };
 
   useEffect(() => {
     fetchPois();
@@ -161,7 +168,6 @@ const Builded: React.FC = () => {
     }
   }, [selectAll, pois, showPermanentMarks, showGroupMarks, showDatedMarks]);
 
-  // Individual checkbox handler
   const handleCheck = (id: number) => {
     setCheckedIds(prev => prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]);
   };
@@ -179,57 +185,15 @@ const Builded: React.FC = () => {
 
 
 async function deleteAll() {
-  const filtered = getFilteredPois();
-  if (filtered.length === 0) return;
+  if (pois.length === 0) return;
   await supabase
     .from("ar_pois")
     .delete()
-    .in("id", filtered.map(p => p.id ?? ""));
+    .in("id", pois.map(p => p.id ?? ""));
   fetchPois();
   setCheckedIds([]);
   setSelectAll(false);
 }
-
-const getFilteredPois = () => {
-  return pois.filter(poi => {
-    const isGroup = !!poi.group_name;
-    const isDated = poi.dates && poi.dates.length > 0 && !isGroup;
-    const isPermanent = !poi.dates || poi.dates.length === 0 && !isGroup;
-
-    const matchesCategory = (showGroupMarks && isGroup) ||
-                            (showDatedMarks && isDated) ||
-                            (showPermanentMarks && isPermanent);
-
-    return matchesCategory;
-  });
-};
-
-const handleSaveNewMarker = async () => {
-  if (!newMarkerLabel || !newMarkerMarkType || !newMarkerLat || !newMarkerLng) {
-    alert('Please fill all fields');
-    return;
-  }
-  const { error } = await supabase.from('ar_pois').insert({
-    lat: parseFloat(newMarkerLat),
-    lng: parseFloat(newMarkerLng),
-    label: newMarkerLabel,
-    mark_type: newMarkerMarkType,
-    color: newMarkerColor,
-    height: 1,
-  });
-  if (error) {
-    console.error('Error saving marker:', error);
-  } else {
-    setShowAddModal(false);
-    setNewMarkerLabel('');
-    setNewMarkerMarkType('');
-    setNewMarkerColor('#007cf0');
-    setNewMarkerLat('');
-    setNewMarkerLng('');
-    fetchPois();
-  }
-};
-
 
   return (
     <IonPage>
@@ -241,149 +205,169 @@ const handleSaveNewMarker = async () => {
           <IonTitle>Builded Pens</IonTitle>
         </IonToolbar>
       </IonHeader>
+
       <IonContent fullscreen>
         <div className="builded-wrap">
-          <div className="calendar-container">
+          <div className="combined-container">
             <div className="builded-card">
-              <h3>Calendar</h3>
-              <IonDatetime
-                presentation="date"
-                value={selectedDate}
-                onIonChange={(e) => setSelectedDate(e.detail.value as string)}
-              />
-            </div>
-          </div>
-          <div className="details-container">
-            {selected ? (
-              <div className="builded-card">
-                <h4>Marker Details</h4>
-                <p><strong>Mark Type:</strong> {selected.mark_type}</p>
-                <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span> {selected.color}</p>
-                <p><strong>Label:</strong> {selected.label}</p>
-                <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
-                <p><strong>Height:</strong> {selected.height}m</p>
-                <div style={{marginTop:12}}>
-                  <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit</button>
-                  <button className="btn" style={{marginLeft:8}} onClick={() => setSelected(null)}>Close</button>
-                </div>
-              </div>
-            ) : (
-              <div className="builded-card">
-                <h4>Marker Details</h4>
-                <p>Select a marker to view details</p>
-              </div>
-            )}
-            {selected && (selected as any).editing && (
-              <div className="builded-card">
-                <h4>Edit Marker</h4>
-                <label>Label</label>
-                <input
-                  className="input"
-                  value={selected.label}
-                  onChange={(e) => setSelected({ ...selected, label: e.target.value })}
-                />
-                <label>Mark Type</label>
-                <select
-                  className="input"
-                  value={selected.mark_type}
-                  onChange={(e) => setSelected({ ...selected, mark_type: e.target.value })}
-                >
-                  <option value="building">Building</option>
-                  <option value="department">Department</option>
-                  <option value="events">Events</option>
-                  <option value="rooms">Rooms</option>
-                  <option value="hazard">Hazard</option>
-                </select>
-                <label>Color</label>
-                <input
-                  className="input"
-                  type="color"
-                  value={selected.color}
-                  onChange={(e) => setSelected({ ...selected, color: e.target.value })}
-                />
-                <label>Latitude</label>
-                <input
-                  className="input"
-                  type="number"
-                  step="0.00001"
-                  value={selected.lat}
-                  onChange={(e) => setSelected({ ...selected, lat: Number(e.target.value) })}
-                />
-                <label>Longitude</label>
-                <input
-                  className="input"
-                  type="number"
-                  step="0.00001"
-                  value={selected.lng}
-                  onChange={(e) => setSelected({ ...selected, lng: Number(e.target.value) })}
-                />
-                <label>Height (m)</label>
-                <input
-                  className="input"
-                  type="number"
-                  min={1}
-                  value={selected.height}
-                  onChange={(e) => setSelected({ ...selected, height: Number(e.target.value) })}
-                />
-                <div style={{marginTop:12}}>
-                  <button className="btn primary" onClick={() => updatePoi(selected)}>
-                    Save
-                  </button>
-                  <button className="btn danger" style={{marginLeft:8}} onClick={() => deletePoi(selected)}>
-                    Delete
-                  </button>
-                  <button className="btn" style={{marginLeft:8}} onClick={() => setSelected({ ...selected, editing: false })}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="list-container">
-            <div className="builded-card">
-              <h3>All Saved Markers</h3>
-              <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:12}}>
-                <div style={{display:'flex', gap:8}}>
-                  <label><input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} /> Permanent</label>
-                  <label><input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} /> Groups</label>
-                  <label><input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} /> Dated</label>
-                </div>
-                <div style={{display:'flex',gap:8}}>
-                  <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
-                  <button className="btn danger" onClick={deleteAll}>Delete All</button>
-                  <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
-                </div>
-              </div>
-              <div className="poi-list">
-                {getFilteredPois().map((p) => (
-                  <div key={p.id} className="poi-item">
-                    <input type="checkbox" checked={checkedIds.includes(p.id!)} onChange={() => handleCheck(p.id!)} style={{marginRight:8}} />
-                    <div className="poi-meta">
-                      <span className="poi-label">{p.label}</span>
-                      <span className="poi-coords">{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</span>
-                      <span className="poi-type">{p.mark_type}</span>
-                      <span className="poi-color" style={{backgroundColor: p.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span>
-                      <span className="poi-height">Height: {p.height}m</span>
+              {!selected && (
+                <>
+                  <h3>All Saved Markers</h3>
+                  <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:12}}>
+                    <div style={{display:'flex', gap:8}}>
+                      <label><input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} /> Permanent</label>
+                      <label><input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} /> Groups</label>
+                      <label><input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} /> Dated</label>
                     </div>
-                    <div className="poi-actions">
-                      <button className="btn view" onClick={() => setSelected(p)}>Details</button>
-                      <button className="btn edit" onClick={() => setSelected({ ...p, editing: true })}>Edit</button>
-                      <button className="btn view" onClick={() => setMapLocation(p)}>View</button>
-                      <button className="btn danger" onClick={() => deletePoi(p)}>Delete</button>
+                    <div style={{display:'flex',gap:8}}>
+                      <label><input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} /> Select All</label>
+                      <button className="btn danger" onClick={deleteAll}>Delete All</button>
+                      <button className="btn danger" onClick={deleteSelected} disabled={checkedIds.length === 0}>Delete Selected</button>
                     </div>
                   </div>
-                ))}
-                {pois.length === 0 && <div className="empty">No markers saved yet.</div>}
-              </div>
+                  <div className="poi-list">
+                    {getFilteredPois().map((p) => (
+                      <div key={p.id} className="poi-item">
+                        <div style={{position: 'absolute', top: '12px', right: '12px'}}>
+                          <input type="checkbox" checked={checkedIds.includes(p.id!)} onChange={() => handleCheck(p.id!)} />
+                        </div>
+                        <div className="poi-meta">
+                          <span className="poi-label">{p.label}</span>
+                          <span className="poi-coords">{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</span>
+                          <span className="poi-type">{p.mark_type}</span>
+                          <span className="poi-color" style={{backgroundColor: p.color}}></span>
+                          <span className="poi-height">Height: {p.height}m</span>
+                        </div>
+                        <div className="poi-actions">
+                          <button className="btn view" onClick={() => setSelected(p)}>Details</button>
+                          <button className="btn edit" onClick={() => setSelected({ ...p, editing: true })}>Edit</button>
+                          <button className="btn view" onClick={() => setMapLocation(p)}>View</button>
+                          <button className="btn danger" onClick={() => deletePoi(p)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                    {pois.length === 0 && <div className="empty">No markers saved yet.</div>}
+                  </div>
+                </>
+              )}
+
+              {selected && !selected.editing && (
+                <>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16}}>
+                    <h3>Marker Details</h3>
+                    <button className="btn" onClick={() => setSelected(null)} style={{padding: '8px', background: 'transparent', color: '#007cf0', border: '1px solid #007cf0'}}>
+                      ✕
+                    </button>
+                  </div>
+                  <div style={{padding: '16px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '12px', marginBottom: 16}}>
+                    <p><strong>Mark Type:</strong> {selected.mark_type}</p>
+                    <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span> {selected.color}</p>
+                    <p><strong>Label:</strong> {selected.label}</p>
+                    <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
+                    <p><strong>Height:</strong> {selected.height}m</p>
+                  </div>
+                  <div style={{marginTop:12}}>
+                    <button className="btn edit" onClick={() => setSelected({ ...selected, editing: true })}>Edit</button>
+                    <button className="btn view" onClick={() => setMapLocation(selected)} style={{marginLeft:8}}>View on Map</button>
+                  </div>
+                </>
+              )}
+
+              {selected && selected.editing && (
+                <>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16}}>
+                    <h3>Edit Marker</h3>
+                    <button className="btn" onClick={() => setSelected(null)} style={{padding: '8px', background: 'transparent', color: '#007cf0', border: '1px solid #007cf0'}}>
+                      ✕
+                    </button>
+                  </div>
+                  <div style={{display: 'grid', gap: 16}}>
+                    <div>
+                      <label>Label</label>
+                      <input
+                        className="input"
+                        value={selected.label}
+                        onChange={(e) => setSelected({ ...selected, label: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label>Mark Type</label>
+                      <select
+                        className="input"
+                        value={selected.mark_type}
+                        onChange={(e) => setSelected({ ...selected, mark_type: e.target.value })}
+                      >
+                        <option value="building">Building</option>
+                        <option value="department">Department</option>
+                        <option value="events">Events</option>
+                        <option value="rooms">Rooms</option>
+                        <option value="hazard">Hazard</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>Color</label>
+                      <input
+                        className="input"
+                        type="color"
+                        value={selected.color}
+                        onChange={(e) => setSelected({ ...selected, color: e.target.value })}
+                      />
+                    </div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
+                      <div>
+                        <label>Latitude</label>
+                        <input
+                          className="input"
+                          type="number"
+                          step="0.00001"
+                          value={selected.lat}
+                          onChange={(e) => setSelected({ ...selected, lat: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div>
+                        <label>Longitude</label>
+                        <input
+                          className="input"
+                          type="number"
+                          step="0.00001"
+                          value={selected.lng}
+                          onChange={(e) => setSelected({ ...selected, lng: Number(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label>Height (m)</label>
+                      <input
+                        className="input"
+                        type="number"
+                        min={1}
+                        value={selected.height}
+                        onChange={(e) => setSelected({ ...selected, height: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div style={{marginTop:20, display: 'flex', gap: 12}}>
+                    <button className="btn primary" onClick={() => updatePoi(selected)}>
+                      Save Changes
+                    </button>
+                    <button className="btn danger" onClick={() => deletePoi(selected)}>
+                      Delete Marker
+                    </button>
+                    <button className="btn" onClick={() => setSelected({ ...selected, editing: false })}>
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="map-container">
             <div className="builded-card">
               <h3>Map View</h3>
               {mapLocation ? (
-                <div ref={mapContainer} style={{height: '400px'}} />
+                <div ref={mapContainer} style={{height: '100%'}} />
               ) : (
-                <div style={{height: '400px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={{height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                   <p>Map integration placeholder</p>
                   <p>Select a marker to view on map</p>
                 </div>
@@ -410,16 +394,55 @@ const handleSaveNewMarker = async () => {
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          <IonInput value={newMarkerLabel} onIonChange={e => setNewMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
-          <IonSelect value={newMarkerMarkType} placeholder="Select mark type" onIonChange={e => setNewMarkerMarkType(e.detail.value!)}>
-            {markTypeOptions.map(option => (
-              <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
-            ))}
-          </IonSelect>
-          <input type="color" value={newMarkerColor} onChange={e => setNewMarkerColor(e.target.value)} style={{width: '100%', height: '40px'}} />
-          <IonInput type="number" value={newMarkerLat} onIonChange={e => setNewMarkerLat(e.detail.value!)} placeholder="Latitude" />
-          <IonInput type="number" value={newMarkerLng} onIonChange={e => setNewMarkerLng(e.detail.value!)} placeholder="Longitude" />
-          <IonButton expand="full" onClick={handleSaveNewMarker} color="primary">
+          <IonItem>
+            <IonLabel position="stacked">Label</IonLabel>
+            <IonInput value={newMarkerLabel} onIonChange={e => setNewMarkerLabel(e.detail.value!)} placeholder="Enter marker label" />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Mark Type</IonLabel>
+            <IonSelect value={newMarkerMarkType} placeholder="Select mark type" onIonChange={e => setNewMarkerMarkType(e.detail.value)}>
+              {markTypeOptions.map(option => (
+                <IonSelectOption key={option.value} value={option.value}>{option.label}</IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Color</IonLabel>
+            <input type="color" value={newMarkerColor} onChange={e => setNewMarkerColor(e.target.value)} style={{width: '100%', height: '40px', border: 'none', borderRadius: '8px'}} />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Latitude</IonLabel>
+            <IonInput type="number" value={newMarkerLat} onIonChange={e => setNewMarkerLat(e.detail.value!)} placeholder="Latitude" />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Longitude</IonLabel>
+            <IonInput type="number" value={newMarkerLng} onIonChange={e => setNewMarkerLng(e.detail.value!)} placeholder="Longitude" />
+          </IonItem>
+          <IonButton expand="full" onClick={async () => {
+            if (!newMarkerLat || !newMarkerLng || !newMarkerLabel || !newMarkerMarkType) {
+              alert('Please fill all fields');
+              return;
+            }
+            const { error } = await supabase.from('ar_pois').insert({
+              lat: Number(newMarkerLat),
+              lng: Number(newMarkerLng),
+              label: newMarkerLabel,
+              mark_type: newMarkerMarkType,
+              color: newMarkerColor,
+              height: 1,
+            });
+            if (error) {
+              console.error('Error saving marker:', error);
+            } else {
+              setShowAddModal(false);
+              setNewMarkerLabel('');
+              setNewMarkerMarkType('');
+              setNewMarkerColor('#007cf0');
+              setNewMarkerLat('');
+              setNewMarkerLng('');
+              fetchPois();
+            }
+          }} color="primary">
             <IonIcon icon={checkmark} slot="start" />
             Done
           </IonButton>
@@ -434,5 +457,3 @@ const handleSaveNewMarker = async () => {
 };
 
 export default Builded;
-
-
