@@ -24,10 +24,13 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 const MapMarker: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+   const markerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [mapStyle, setMapStyle] = useState<string>('mapbox://styles/mapbox/streets-v11');
   const [is3D, setIs3D] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(true);
+  const [markerCoords, setMarkerCoords] = useState<[number, number] | null>(null);
+
 
   const [cameraState, setCameraState] = useState({
     center: [124.8681005804846, 8.360074137369724] as [number, number],
@@ -73,7 +76,10 @@ const MapMarker: React.FC = () => {
           'fill-extrusion-opacity': 0.6,
         },
       });
-    }
+    }else {
+   
+    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "visible");
+  }
 
     mapRef.current.flyTo({
       pitch: 60,
@@ -82,6 +88,7 @@ const MapMarker: React.FC = () => {
       essential: true,
     });
   };
+  
 
   const disable3D = () => {
     if (!mapRef.current) return;
@@ -92,6 +99,10 @@ const MapMarker: React.FC = () => {
       duration: 2000,
       essential: true,
     });
+      if (mapRef.current.getLayer("3d-buildings")) {
+    mapRef.current.setLayoutProperty("3d-buildings", "visibility", "none");
+  }
+   
   };
 
   useEffect(() => {
@@ -123,9 +134,24 @@ const MapMarker: React.FC = () => {
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+     mapRef.current.on('click', (e) => {
+      const coords: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+      setMarkerCoords(coords);
+
+      if (markerRef.current) {
+        markerRef.current.setLngLat(coords);
+      } else {
+        markerRef.current = new mapboxgl.Marker({ color: '#d62828' })
+          .setLngLat(coords)
+          .addTo(mapRef.current!);
+      }
+    });
+
     mapRef.current.on('load', () => {
       mapRef.current?.resize();
-      if (is3D) enable3D();
+       if (is3D) {
+      enable3D();
+    }
     });
 
     return () => {
@@ -202,6 +228,18 @@ const MapMarker: React.FC = () => {
                       onIonChange={(e) => setIs3D(e.detail.checked)}
                     />
                   </IonItem>
+                    {/* 📍 Pin Location Container */}
+                  <div className="pin-container">
+                    <h4>📍 Pin Location</h4>
+                    {markerCoords ? (
+                      <p>
+                        Lng: {markerCoords[0].toFixed(5)} <br />
+                        Lat: {markerCoords[1].toFixed(5)}
+                      </p>
+                    ) : (
+                      <p>Click on the map to drop a pin.</p>
+                    )}
+                  </div>
                 </>
               )}
             </div>
