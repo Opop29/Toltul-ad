@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   IonMenu,
   IonHeader,
@@ -21,6 +21,7 @@ import { menuController } from "@ionic/core";
 const AppMenu: React.FC = () => {
   const history = useHistory();
   const [loggingOut, setLoggingOut] = useState(false);
+  const firstMenuItemRef = useRef<HTMLIonItemElement>(null);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -32,8 +33,20 @@ const AppMenu: React.FC = () => {
     }, 2000);
   };
 
+  const handleMenuDidOpen = () => {
+    // Move focus to the first menu item when menu opens
+    setTimeout(() => {
+      if (firstMenuItemRef.current) {
+        const button = firstMenuItemRef.current.querySelector('button');
+        if (button) {
+          button.focus();
+        }
+      }
+    }, 100); // Small delay to ensure menu is fully open
+  };
+
   return (
-    <IonMenu contentId="main" side="start" className="sidebar-menu">
+    <IonMenu contentId="main" side="start" className="sidebar-menu" onIonDidOpen={handleMenuDidOpen}>
       <IonHeader className="sidebar-header">
         <div className="sidebar-brand">
           <img
@@ -60,10 +73,10 @@ const AppMenu: React.FC = () => {
         </div>
 
         <IonList className="sidebar-nav">
-          <IonItem routerLink="/Toltul-ad/home" button detail={false} lines="none" className="sidebar-nav-item">
-            <IonIcon slot="start" icon={homeOutline} />
-            <IonLabel>Home Dashboard</IonLabel>
-          </IonItem>
+           <IonItem ref={firstMenuItemRef} routerLink="/Toltul-ad/home" button detail={false} lines="none" className="sidebar-nav-item">
+             <IonIcon slot="start" icon={homeOutline} />
+             <IonLabel>Home Dashboard</IonLabel>
+           </IonItem>
           <IonItem routerLink="/Toltul-ad/MapMarker" button detail={false} lines="none" className="sidebar-nav-item">
             <IonIcon slot="start" icon={addCircleOutline} />
             <IonLabel>Create Markers</IonLabel>

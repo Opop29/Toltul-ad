@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Redirect, Route } from "react-router-dom";
 import {
   IonTabs,
@@ -15,8 +15,34 @@ import Builded from "../pages/Builded";
 import Report from "../pages/Report";
 import "../css/Tabs.css";
 import AppMenu from "../components/AppMenu";
+import { menuController } from "@ionic/core";
 
 const TabsLayout: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleMenuOpen = () => setMenuOpen(true);
+    const handleMenuClose = () => setMenuOpen(false);
+
+    document.addEventListener('ionMenuDidOpen', handleMenuOpen);
+    document.addEventListener('ionMenuDidClose', handleMenuClose);
+
+    return () => {
+      document.removeEventListener('ionMenuDidOpen', handleMenuOpen);
+      document.removeEventListener('ionMenuDidClose', handleMenuClose);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mainOutlet = document.getElementById('main');
+    if (mainOutlet) {
+      if (menuOpen) {
+        mainOutlet.setAttribute('inert', '');
+      } else {
+        mainOutlet.removeAttribute('inert');
+      }
+    }
+  }, [menuOpen]);
   return (
     <>
       <AppMenu />
