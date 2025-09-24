@@ -42,8 +42,8 @@ const AppMenu: React.FC = () => {
             className="sidebar-logo"
           />
           <div className="sidebar-brand-text">
-            <h1 className="sidebar-title">Toltula-AR</h1>
-            <p className="sidebar-subtitle">Augmented Reality Platform</p>
+            <h1 className="sidebar-title">Toltul-AD</h1>
+            <p className="sidebar-subtitle">admin for Augmented Reality application</p>
           </div>
         </div>
       </IonHeader>
@@ -53,6 +53,10 @@ const AppMenu: React.FC = () => {
         <div className="sidebar-welcome">
           <h3 className="welcome-title">🎉 Welcome Back!</h3>
           <p className="welcome-subtitle">You are successfully signed in</p>
+          <div className="welcome-status">
+            <span className="status-dot"></span>
+            <span className="status-text">🟢 Online & Ready</span>
+          </div>
         </div>
 
         <IonList className="sidebar-nav">
