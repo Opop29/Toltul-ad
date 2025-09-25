@@ -1,30 +1,3 @@
-const ArrowBackground: React.FC = () => {
-  const [arrows, setArrows] = useState<Array<{left: number, delay: number, size: number}>>([]);
-  useEffect(() => {
-    const arr = Array.from({length: 8}, () => ({
-      left: Math.random() * 90, 
-      delay: Math.random() * 10, 
-      size: 30 + Math.random() * 40 
-    }));
-    setArrows(arr);
-  }, []);
-  return (
-    <div className="arrow-bg">
-      {arrows.map((a, i) => (
-        <div
-          key={i}
-          className="arrow"
-          style={{
-            left: `${a.left}vw`,
-            animationDelay: `${a.delay}s`,
-            width: `${a.size}px`,
-            height: `${a.size}px`,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
 import React, { useState, useEffect, useRef } from "react";
 import {
   IonPage,
@@ -37,6 +10,7 @@ import {
 } from "@ionic/react";
 import { useHistory } from "react-router-dom";
 import { supabase } from "../utils/supabaseClient";
+import "../css/Home.css";
 import "../css/EnterPasscode.css";
 
 const EnterPasscode: React.FC = () => {
@@ -172,7 +146,17 @@ const EnterPasscode: React.FC = () => {
 
   return (
     <IonPage>
-  <IonContent className="enter-passcode-bg" fullscreen inert={!!document.querySelector('ion-router-outlet[aria-hidden="true"]')}>
+  <IonContent className="home-content" fullscreen inert={!!document.querySelector('ion-router-outlet[aria-hidden="true"]')}>
+        {/* EPIC BACKGROUND ANIMATIONS */}
+        <div className="floating-shapes">
+          <div className="shape-1"></div>
+          <div className="shape-2"></div>
+          <div className="shape-3"></div>
+          <div className="shape-4"></div>
+          <div className="shape-5"></div>
+        </div>
+        <div className="wave-overlay"></div>
+
         <IonLoading isOpen={successLoading} message="Preparing your experience..." spinner="crescent" translucent />
         <IonAlert
           isOpen={showWelcome}
@@ -192,16 +176,15 @@ const EnterPasscode: React.FC = () => {
             }
           }}
         />
-        <ArrowBackground />
-        <div className="glass-card passcode-pin-container enhanced-card">
+        <div className="glass-card passcode-pin-container enhanced-card" style={{background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'}}>
           {/* Logo at the top */}
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
 
           {/* Bigger Title */}
-          <IonTitle className="tech-title enhanced-title">Toltul-AD</IonTitle>
+          <IonTitle className="tech-title enhanced-title" style={{color: 'rgba(255, 255, 255, 0.9)', textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'}}>Toltul-AD</IonTitle>
 
           {/* "Enter Passcode" just below the title */}
-          <h1 className="gradient-title enhanced-gradient-title">🔑 Enter Passcode</h1>
+          <h1 className="gradient-title enhanced-gradient-title" style={{color: 'rgba(255, 255, 255, 0.9)', textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'}}>🔑 Enter Passcode</h1>
 
           {/* Hidden Input */}
           <input
@@ -256,26 +239,18 @@ const EnterPasscode: React.FC = () => {
         {modalMessage && (
           <div
             className={`passcode-modal enhanced-modal ${modalType === "success" ? "success" : "error"}`}
+            style={{
+              background: modalType === "success" ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: modalType === "success" ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+              color: modalType === "success" ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+            }}
           >
             {modalMessage}
           </div>
         )}
 
-        {/* Animated Arrows Background */}
-        <div className="arrows">
-          {[...Array(7)].map((_, i) => (
-            <div
-              key={i}
-              className="arrow"
-              style={{
-                left: `${Math.random() * 100}vw`,
-                animationDelay: `${Math.random() * 100}s`,
-                width: `${30 + Math.random() * 40}px`,
-                height: `${30 + Math.random() * 40}px`,
-              }}
-            />
-          ))}
-        </div>
       </IonContent>
     </IonPage>
   );

@@ -423,7 +423,7 @@ async function deleteAll() {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen>
+      <IonContent className="home-content" fullscreen>
         <div className="builded-wrap">
           <div className="combined-container">
             <div className="builded-card">
@@ -439,29 +439,29 @@ async function deleteAll() {
                   </div>
   
                   {/* Filter Options */}
-                  <div style={{background: 'linear-gradient(135deg, rgba(0, 124, 240, 0.05) 0%, rgba(0, 124, 240, 0.02) 100%)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(0, 124, 240, 0.08)'}}>
-                    <h4 style={{margin: '0 0 12px 0', color: '#2d3748', fontSize: '1rem', fontWeight: '600'}}>View Options</h4>
+                  <div style={{background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)'}}>
+                    <h4 style={{margin: '0 0 12px 0', color: 'rgba(255, 255, 255, 0.9)', fontSize: '1rem', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'}}>View Options</h4>
                     <div style={{display:'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px'}}>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showPermanentMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showPermanentMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showPermanentMarks ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', border: showPermanentMarks ? '2px solid rgba(255, 255, 255, 0.3)' : '2px solid rgba(255, 255, 255, 0.1)', transition: 'all 0.2s', backdropFilter: 'blur(10px)'}}>
                         <input type="checkbox" checked={showPermanentMarks} onChange={e => setShowPermanentMarks(e.target.checked)} style={{margin: 0}} />
-                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Permanent Marks</span>
+                        <span style={{fontSize: '0.9rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)'}}>Permanent Marks</span>
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showGroupMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showGroupMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showGroupMarks ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', border: showGroupMarks ? '2px solid rgba(255, 255, 255, 0.3)' : '2px solid rgba(255, 255, 255, 0.1)', transition: 'all 0.2s', backdropFilter: 'blur(10px)'}}>
                         <input type="checkbox" checked={showGroupMarks} onChange={e => setShowGroupMarks(e.target.checked)} style={{margin: 0}} />
-                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Group Marks</span>
+                        <span style={{fontSize: '0.9rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)'}}>Group Marks</span>
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showDatedMarks ? 'rgba(0, 124, 240, 0.1)' : 'rgba(255,255,255,0.8)', borderRadius: '8px', border: showDatedMarks ? '2px solid #007cf0' : '2px solid transparent', transition: 'all 0.2s'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', background: showDatedMarks ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', border: showDatedMarks ? '2px solid rgba(255, 255, 255, 0.3)' : '2px solid rgba(255, 255, 255, 0.1)', transition: 'all 0.2s', backdropFilter: 'blur(10px)'}}>
                         <input type="checkbox" checked={showDatedMarks} onChange={e => setShowDatedMarks(e.target.checked)} style={{margin: 0}} />
-                        <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Dated Marks</span>
+                        <span style={{fontSize: '0.9rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)'}}>Dated Marks</span>
                       </label>
                     </div>
                   </div>
   
                   {/* Action Buttons */}
                   <div style={{display:'flex', flexWrap: 'wrap', gap:8, marginBottom:12}}>
-                    <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '8px 12px', background: 'rgba(255,255,255,0.9)', borderRadius: '8px', border: selectAll ? '2px solid #007cf0' : '2px solid #e2e8f0'}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '8px 12px', background: 'rgba(255,255,255,0.08)', borderRadius: '8px', border: selectAll ? '2px solid rgba(255, 255, 255, 0.3)' : '2px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', transition: 'all 0.3s ease'}}>
                       <input type="checkbox" checked={selectAll} onChange={e => setSelectAll(e.target.checked)} style={{margin: 0}} />
-                      <span style={{fontSize: '0.9rem', fontWeight: '500'}}>Select All</span>
+                      <span style={{fontSize: '0.9rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)'}}>Select All</span>
                     </label>
                     <button className="btn danger" onClick={() => handleDeleteClick('all', undefined, pois.length)} style={{padding: '8px 16px'}}>
                       🗑️ Delete All
@@ -537,7 +537,7 @@ async function deleteAll() {
                     </button>
                   </div>
                   <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', minHeight: '400px'}}>
-                    <div style={{marginBottom: '30px', padding: '20px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0, 102, 204, 0.1)'}}>
+                    <div style={{marginBottom: '30px', padding: '20px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)'}}>
                       <IonDatetime
                         presentation="date"
                         value={selectedDate}
@@ -556,7 +556,7 @@ async function deleteAll() {
                     </div>
                     {selectedDateMarkers.length > 0 && (
                       <div style={{width: '100%', maxWidth: '600px'}}>
-                        <h4 style={{textAlign: 'center', color: '#1a365d', marginBottom: '16px'}}>
+                        <h4 style={{textAlign: 'center', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '16px', textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'}}>
                           Markers for {new Date(selectedDate).toLocaleDateString()}
                         </h4>
                         <div className="poi-list" style={{gridTemplateColumns: '1fr'}}>
@@ -578,7 +578,7 @@ async function deleteAll() {
                       </div>
                     )}
                     {selectedDateMarkers.length === 0 && (
-                      <div style={{textAlign: 'center', color: '#666', marginTop: '20px'}}>
+                      <div style={{textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', marginTop: '20px'}}>
                         <p>No markers found for the selected date.</p>
                         <p style={{fontSize: '0.9rem', marginTop: '8px'}}>Try selecting a different date.</p>
                       </div>
@@ -597,23 +597,24 @@ async function deleteAll() {
                   </div>
                   {'isGroup' in selected ? (
                    <div>
-                      <div style={{padding: '16px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '12px', marginBottom: 16}}>
+                      <div style={{padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', marginBottom: 16, border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)'}}>
                         <p><strong>Group Name:</strong> {selected.group_name}</p>
                         <p><strong>Mark Type:</strong> {selected.mark_type}</p>
                         <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span> {selected.color}</p>
                         <p><strong>Markers in Group:</strong> {selected.markers.length}</p>
                       </div>
                       <div style={{marginBottom: 16}}>
-                        <h4 style={{marginBottom: '16px', color: '#1a365d', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px'}}>All Markers in this Group:</h4>
+                        <h4 style={{marginBottom: '16px', color: 'rgba(255, 255, 255, 0.9)', borderBottom: '2px solid rgba(255, 255, 255, 0.2)', paddingBottom: '8px', textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'}}>All Markers in this Group:</h4>
                         <div style={{display: 'grid', gap: '12px'}}>
                           {selected.markers.map((marker, index) => (
                             <div key={marker.id} style={{
                               padding: '16px',
-                              background: 'linear-gradient(135deg, rgba(0, 124, 240, 0.05) 0%, rgba(0, 124, 240, 0.02) 100%)',
+                              background: 'rgba(255, 255, 255, 0.05)',
                               borderRadius: '12px',
-                              border: '1px solid rgba(0, 124, 240, 0.1)',
-                              boxShadow: '0 2px 8px rgba(0, 124, 240, 0.08)',
-                              position: 'relative'
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                              position: 'relative',
+                              backdropFilter: 'blur(10px)'
                             }}>
                               <div style={{
                                 position: 'absolute',
@@ -633,7 +634,7 @@ async function deleteAll() {
                                 {index + 1}
                               </div>
                               <div style={{marginBottom: '12px'}}>
-                                <h5 style={{margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.1rem'}}>{marker.label}</h5>
+                                <h5 style={{margin: '0 0 8px 0', color: 'rgba(255, 255, 255, 0.9)', fontSize: '1.1rem', textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'}}>{marker.label}</h5>
                                 <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
                                   <span style={{
                                     backgroundColor: selected.color,
@@ -642,10 +643,10 @@ async function deleteAll() {
                                     borderRadius: '50%',
                                     display: 'inline-block'
                                   }}></span>
-                                  <span style={{fontSize: '0.9rem', color: '#4a5568'}}>{selected.mark_type}</span>
+                                  <span style={{fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)'}}>{selected.mark_type}</span>
                                 </div>
                               </div>
-                              <div style={{fontSize: '0.9rem', color: '#718096'}}>
+                              <div style={{fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)'}}>
                                 <div style={{marginBottom: '4px'}}>
                                   <strong>📍 Coordinates:</strong> {marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}
                                 </div>
@@ -681,7 +682,8 @@ async function deleteAll() {
                               padding: '8px 12px',
                               background: 'rgba(255, 193, 7, 0.1)',
                               borderRadius: '8px',
-                              border: '1px solid rgba(255, 193, 7, 0.3)'
+                              border: '1px solid rgba(255, 193, 7, 0.3)',
+                              backdropFilter: 'blur(10px)'
                             }}>
                               <p style={{margin: 0, fontSize: '0.9rem', color: '#856404'}}>
                                 <strong>📊 Group Info:</strong> Part of "{group.group_name}" group with {group.markers.length} total markers
