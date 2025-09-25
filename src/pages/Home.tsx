@@ -208,7 +208,7 @@ const Home: React.FC = () => {
               <div className="section-content">
                 <IonGrid className="stats-grid">
                   <IonRow>
-                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                    <IonCol size="6" sizeMd="6" sizeLg="3">
                       <IonCard className="stat-card total-markers" onClick={() => navigateTo('/Toltul-ad/report')}>
                         <IonCardContent>
                           <div className="stat-icon">
@@ -222,7 +222,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                    <IonCol size="6" sizeMd="6" sizeLg="3">
                       <IonCard className="stat-card marker-types" onClick={() => navigateTo('/Toltul-ad/report')}>
                         <IonCardContent>
                           <div className="stat-icon">
@@ -236,7 +236,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                    <IonCol size="6" sizeMd="6" sizeLg="3">
                       <IonCard className="stat-card recent-activity" onClick={() => navigateTo('/Toltul-ad/builded')}>
                         <IonCardContent>
                           <div className="stat-icon">
@@ -250,7 +250,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6" sizeLg="3">
+                    <IonCol size="6" sizeMd="6" sizeLg="3">
                       <IonCard className="stat-card quick-actions">
                         <IonCardContent>
                           <div className="stat-icon">
@@ -306,7 +306,7 @@ const Home: React.FC = () => {
               <div className="section-content">
                 <IonGrid className="actions-grid">
                   <IonRow>
-                    <IonCol size="12" sizeMd="6">
+                    <IonCol size="6" sizeMd="6">
                       <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/MapMarker')}>
                         <IonCardContent>
                           <div className="action-content">
@@ -321,7 +321,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6">
+                    <IonCol size="6" sizeMd="6">
                       <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/builded')}>
                         <IonCardContent>
                           <div className="action-content">
@@ -336,7 +336,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6">
+                    <IonCol size="6" sizeMd="6">
                       <IonCard className="action-card" onClick={() => navigateTo('/Toltul-ad/report')}>
                         <IonCardContent>
                           <div className="action-content">
@@ -351,7 +351,7 @@ const Home: React.FC = () => {
                       </IonCard>
                     </IonCol>
 
-                    <IonCol size="12" sizeMd="6">
+                    <IonCol size="6" sizeMd="6">
                       <IonCard className="action-card logout-card" onClick={handleLogout} disabled={loggingOut}>
                         <IonCardContent>
                           <div className="action-content">

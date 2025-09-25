@@ -31,7 +31,7 @@ import {
   timeOutline,
 } from "ionicons/icons";
 import { supabase } from "../utils/supabaseClient";
-import "../css/Report.css";
+import "../css/Home.css";
 interface MarkType {
   id: number;
   value: string;
@@ -226,7 +226,7 @@ const Report: React.FC = () => {
             <IonTitle>Reports & Analytics</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding report-content">
+        <IonContent className="home-content">
           <div className="loading-container">
             <IonSpinner name="crescent" />
             <p>Loading report data...</p>
@@ -247,8 +247,8 @@ const Report: React.FC = () => {
             <IonTitle>Reports & Analytics</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding report-content">
-          <div className="error-container">
+        <IonContent className="home-content">
+          <div className="loading-container">
             <IonIcon icon={statsChartOutline} size="large" color="danger" />
             <h3>Error Loading Reports</h3>
             <p>{error}</p>
@@ -270,273 +270,297 @@ const Report: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="report-content">
+      <IonContent className="home-content">
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent></IonRefresherContent>
         </IonRefresher>
 
-        <div className="report-header">
-          <h1 className="report-title">📊 Toltula-AR Analytics Dashboard</h1>
-          <p className="report-subtitle">Comprehensive insights into your AR marker ecosystem</p>
+        {/* EPIC BACKGROUND ANIMATIONS */}
+        <div className="floating-shapes">
+          <div className="shape-1"></div>
+          <div className="shape-2"></div>
+          <div className="shape-3"></div>
+          <div className="shape-4"></div>
+          <div className="shape-5"></div>
         </div>
+        <div className="wave-overlay"></div>
 
-        {/* Key Metrics Cards */}
-        <IonGrid className="metrics-grid">
-          <IonRow>
-            <IonCol size="12" sizeMd="6" sizeLg="3">
-              <IonCard className="metric-card total-markers">
-                <IonCardContent>
-                  <div className="metric-icon">
-                    <IonIcon icon={locationOutline} />
-                  </div>
-                  <div className="metric-content">
-                    <h2>{stats?.totalMarkers || 0}</h2>
-                    <p>Total Markers</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
+        {/* Main Dashboard Container */}
+        <div className="dashboard-container">
 
-            <IonCol size="12" sizeMd="6" sizeLg="3">
-              <IonCard className="metric-card total-groups">
-                <IonCardContent>
-                  <div className="metric-icon">
-                    <IonIcon icon={mapOutline} />
-                  </div>
-                  <div className="metric-content">
-                    <h2>{stats?.totalGroups || 0}</h2>
-                    <p>Grouped Markers</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
+          {/* Hero Section */}
+          <div className="dashboard-section hero-section">
+            <div className="home-hero">
+              <div className="floating-particles"></div>
+              <div className="hero-content">
+                <div className="hero-logo">
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
+                </div>
+                <h1 className="home-title">
+                  <span className="title-main">📊 Analytics</span>
+                  <span className="title-accent">& Reports</span>
+                </h1>
+                <div className="hero-taglines">
+                  <p className="tagline-primary">Comprehensive insights into your AR marker ecosystem</p>
+                  <p className="tagline-secondary">📈 Analyze • Track • Optimize</p>
+                  <p className="tagline-tertiary">📊 Data-driven decisions for better AR experiences</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <IonCol size="12" sizeMd="6" sizeLg="3">
-              <IonCard className="metric-card marker-types">
-                <IonCardContent>
-                  <div className="metric-icon">
-                    <IonIcon icon={barChartOutline} />
-                  </div>
-                  <div className="metric-content">
-                    <h2>{Object.keys(stats?.markersByType || {}).length}</h2>
-                    <p>Marker Types</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-
-            <IonCol size="12" sizeMd="6" sizeLg="3">
-              <IonCard className="metric-card color-variety">
-                <IonCardContent>
-                  <div className="metric-icon">
-                    <IonIcon icon={colorPaletteOutline} />
-                  </div>
-                  <div className="metric-content">
-                    <h2>{Object.keys(stats?.markersByColor || {}).length}</h2>
-                    <p>Color Variations</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-
-            <IonCol size="12" sizeMd="6" sizeLg="3">
-              <IonCard className="metric-card average-height">
-                <IonCardContent>
-                  <div className="metric-icon">
-                    <IonIcon icon={trendingUpOutline} />
-                  </div>
-                  <div className="metric-content">
-                    <h2>{stats?.averageHeight ? stats.averageHeight.toFixed(1) : '0'}</h2>
-                    <p>Average Height</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
-
-        {/* Charts and Analytics */}
-        <IonGrid>
-          <IonRow>
-            {/* Marker Types Distribution */}
-            <IonCol size="12" sizeLg="6">
-              <IonCard className="analytics-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={barChartOutline} />
-                    Marker Types Distribution
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="chart-container">
-                    {Object.entries(stats?.markersByType || {}).map(([type, count]) => (
-                      <div key={type} className="chart-item">
-                        <div className="chart-label">{type}</div>
-                        <div className="chart-bar">
-                          <div
-                            className="chart-fill"
-                            style={{
-                              width: `${(count / (stats?.totalMarkers || 1)) * 100}%`,
-                              background: 'linear-gradient(90deg, #007cf0, #00dfd8)'
-                            }}
-                          ></div>
-                        </div>
-                        <div className="chart-value">{count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-
-            {/* Color Distribution */}
-            <IonCol size="12" sizeLg="6">
-              <IonCard className="analytics-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={colorPaletteOutline} />
-                    Color Distribution
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="color-distribution">
-                    {Object.entries(stats?.markersByColor || {}).map(([color, count]) => (
-                      <div key={color} className="color-item">
-                        <div
-                          className="color-swatch"
-                          style={{ backgroundColor: color }}
-                        ></div>
-                        <span className="color-name">{getColorName(color)}</span>
-                        <span className="color-count">{count} markers</span>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-
-          <IonRow>
-            {/* Category Distribution */}
-            <IonCol size="12" sizeLg="6">
-              <IonCard className="analytics-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={barChartOutline} />
-                    Category Distribution
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="chart-container">
-                    {Object.entries(stats?.markersByCategory || {}).map(([category, count]) => (
-                      <div key={category} className="chart-item">
-                        <div className="chart-label">{category}</div>
-                        <div className="chart-bar">
-                          <div
-                            className="chart-fill"
-                            style={{
-                              width: `${(count / (stats?.totalMarkers || 1)) * 100}%`,
-                              background: 'linear-gradient(90deg, #28a745, #20c997)'
-                            }}
-                          ></div>
-                        </div>
-                        <div className="chart-value">{count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-
-          <IonRow>
-            {/* Recent Activity */}
-            <IonCol size="12" sizeLg="6">
-              <IonCard className="analytics-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={timeOutline} />
-                    Recent Activity
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="activity-list">
-                    {stats?.recentActivity.slice(0, 5).map((marker, index) => (
-                      <div key={marker.id || index} className="activity-item">
-                        <div className="activity-icon">
+          {/* Key Metrics Section */}
+          <div className="dashboard-section stats-section">
+            <div className="section-header">
+              <h2 className="section-title">📈 Key Metrics</h2>
+              <p className="section-subtitle">Essential statistics and performance indicators</p>
+            </div>
+            <div className="section-content">
+              <IonGrid className="stats-grid">
+                <IonRow>
+                  <IonCol size="6" sizeMd="6" sizeLg="3">
+                    <IonCard className="stat-card total-markers">
+                      <IonCardContent>
+                        <div className="stat-icon">
                           <IonIcon icon={locationOutline} />
                         </div>
-                        <div className="activity-content">
-                          <div className="activity-title">{marker.label}</div>
-                          <div className="activity-meta">
-                            {marker.mark_type} • {formatDate(marker.created_at)}
+                        <div className="stat-content">
+                          <h2>{stats?.totalMarkers || 0}</h2>
+                          <p>Total Markers</p>
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+
+                  <IonCol size="6" sizeMd="6" sizeLg="3">
+                    <IonCard className="stat-card marker-types">
+                      <IonCardContent>
+                        <div className="stat-icon">
+                          <IonIcon icon={barChartOutline} />
+                        </div>
+                        <div className="stat-content">
+                          <h2>{Object.keys(stats?.markersByType || {}).length}</h2>
+                          <p>Marker Types</p>
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+
+                  <IonCol size="6" sizeMd="6" sizeLg="3">
+                    <IonCard className="stat-card recent-activity">
+                      <IonCardContent>
+                        <div className="stat-icon">
+                          <IonIcon icon={timeOutline} />
+                        </div>
+                        <div className="stat-content">
+                          <h2>{stats?.totalGroups || 0}</h2>
+                          <p>Grouped Markers</p>
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+
+                  <IonCol size="6" sizeMd="6" sizeLg="3">
+                    <IonCard className="stat-card quick-actions">
+                      <IonCardContent>
+                        <div className="stat-icon">
+                          <IonIcon icon={colorPaletteOutline} />
+                        </div>
+                        <div className="stat-content">
+                          <h2>{Object.keys(stats?.markersByColor || {}).length}</h2>
+                          <p>Color Variations</p>
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+
+                  <IonCol size="6" sizeMd="6" sizeLg="3">
+                    <IonCard className="stat-card total-markers">
+                      <IonCardContent>
+                        <div className="stat-icon">
+                          <IonIcon icon={trendingUpOutline} />
+                        </div>
+                        <div className="stat-content">
+                          <h2>{stats?.averageHeight ? stats.averageHeight.toFixed(1) : '0'}</h2>
+                          <p>Average Height</p>
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </div>
+          </div>
+
+          {/* Analytics Charts Section */}
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h2 className="section-title">📊 Detailed Analytics</h2>
+              <p className="section-subtitle">In-depth analysis of your AR marker data</p>
+            </div>
+            <div className="section-content">
+              <IonGrid>
+                <IonRow>
+                  {/* Marker Types Distribution */}
+                  <IonCol size="12" sizeLg="6">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={barChartOutline} />
+                          <div>
+                            <h3>Marker Types Distribution</h3>
+                            <p>Breakdown of markers by type</p>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-
-            {/* Top Locations */}
-            <IonCol size="12" sizeLg="6">
-              <IonCard className="analytics-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={trendingUpOutline} />
-                    Popular Locations
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="location-list">
-                    {stats?.topLocations.map((location, index) => (
-                      <div key={index} className="location-item">
-                        <div className="location-rank">#{index + 1}</div>
-                        <div className="location-content">
-                          <div className="location-coords">{location.coords}</div>
-                          <div className="location-count">{location.count} markers</div>
+                        <div className="chart-container" style={{marginTop: '16px'}}>
+                          {Object.entries(stats?.markersByType || {}).map(([type, count]) => (
+                            <div key={type} className="chart-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
+                              <div className="chart-label" style={{flex: 1, fontSize: '14px'}}>{type}</div>
+                              <div className="chart-bar" style={{flex: 2, height: '8px', background: '#e0e0e0', borderRadius: '4px', margin: '0 8px'}}>
+                                <div
+                                  className="chart-fill"
+                                  style={{
+                                    width: `${(count / (stats?.totalMarkers || 1)) * 100}%`,
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, #007cf0, #00dfd8)',
+                                    borderRadius: '4px'
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="chart-value" style={{width: '30px', textAlign: 'right', fontSize: '14px'}}>{count}</div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
 
-          {/* Date Distribution Timeline */}
-          <IonRow>
-            <IonCol size="12">
-              <IonCard className="analytics-card timeline-card">
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={calendarOutline} />
-                    Marker Creation Timeline
-                  </IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div className="timeline-container">
-                    {stats?.dateDistribution.map((item, index) => (
-                      <div key={item.month} className="timeline-item">
-                        <div className="timeline-month">{item.month}</div>
-                        <div className="timeline-bar">
-                          <div
-                            className="timeline-fill"
-                            style={{
-                              width: `${Math.max((item.count / (stats?.totalMarkers || 1)) * 100, 5)}%`
-                            }}
-                          ></div>
+                  {/* Color Distribution */}
+                  <IonCol size="12" sizeLg="6">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={colorPaletteOutline} />
+                          <div>
+                            <h3>Color Distribution</h3>
+                            <p>Markers grouped by color</p>
+                          </div>
                         </div>
-                        <div className="timeline-count">{item.count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+                        <div className="color-distribution" style={{marginTop: '16px'}}>
+                          {Object.entries(stats?.markersByColor || {}).map(([color, count]) => (
+                            <div key={color} className="color-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
+                              <div
+                                className="color-swatch"
+                                style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: color, marginRight: '12px' }}
+                              ></div>
+                              <span className="color-name" style={{flex: 1}}>{getColorName(color)}</span>
+                              <span className="color-count">{count} markers</span>
+                            </div>
+                          ))}
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                </IonRow>
+
+                <IonRow>
+                  {/* Recent Activity */}
+                  <IonCol size="12" sizeLg="6">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={timeOutline} />
+                          <div>
+                            <h3>Recent Activity</h3>
+                            <p>Latest marker additions</p>
+                          </div>
+                        </div>
+                        <div className="activity-list" style={{marginTop: '16px'}}>
+                          {stats?.recentActivity.slice(0, 5).map((marker, index) => (
+                            <div key={marker.id || index} className="activity-item" style={{display: 'flex', alignItems: 'center', marginBottom: '12px'}}>
+                              <div className="activity-icon" style={{marginRight: '12px'}}>
+                                <IonIcon icon={locationOutline} />
+                              </div>
+                              <div className="activity-content">
+                                <div className="activity-title" style={{fontWeight: '600', fontSize: '14px'}}>{marker.label}</div>
+                                <div className="activity-meta" style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>
+                                  {marker.mark_type} • {formatDate(marker.created_at)}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+
+                  {/* Top Locations */}
+                  <IonCol size="12" sizeLg="6">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={trendingUpOutline} />
+                          <div>
+                            <h3>Popular Locations</h3>
+                            <p>Most active marker areas</p>
+                          </div>
+                        </div>
+                        <div className="location-list" style={{marginTop: '16px'}}>
+                          {stats?.topLocations.map((location, index) => (
+                            <div key={index} className="location-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
+                              <div className="location-rank" style={{width: '30px', fontWeight: 'bold', color: '#60a5fa'}}>#{index + 1}</div>
+                              <div className="location-content" style={{flex: 1}}>
+                                <div className="location-coords" style={{fontSize: '14px'}}>{location.coords}</div>
+                                <div className="location-count" style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>{location.count} markers</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                </IonRow>
+
+                {/* Date Distribution Timeline */}
+                <IonRow>
+                  <IonCol size="12">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={calendarOutline} />
+                          <div>
+                            <h3>Marker Creation Timeline</h3>
+                            <p>Monthly marker creation trends</p>
+                          </div>
+                        </div>
+                        <div className="timeline-container" style={{marginTop: '16px'}}>
+                          {stats?.dateDistribution.map((item, index) => (
+                            <div key={item.month} className="timeline-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
+                              <div className="timeline-month" style={{width: '80px', fontSize: '14px'}}>{item.month}</div>
+                              <div className="timeline-bar" style={{flex: 1, height: '12px', background: '#e0e0e0', borderRadius: '6px', margin: '0 12px'}}>
+                                <div
+                                  className="timeline-fill"
+                                  style={{
+                                    width: `${Math.max((item.count / (stats?.totalMarkers || 1)) * 100, 5)}%`,
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, #43e97b, #38f9d7)',
+                                    borderRadius: '6px'
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="timeline-count" style={{width: '30px', textAlign: 'right', fontSize: '14px'}}>{item.count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </div>
+          </div>
+
+        </div>
       </IonContent>
     </IonPage>
   );
