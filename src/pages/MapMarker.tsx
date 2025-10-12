@@ -713,11 +713,11 @@ const MapMarker: React.FC = () => {
                 highlightedDates={datesWithMarks.map(date => ({
                   date: date,
                   textColor: '#ffffff',
-                  backgroundColor: '#007cf0'
+                  backgroundColor: '#000000'
                 }))}
               />
               <div style={{marginBottom: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.7)', textAlign: 'center'}}>
-                📅 Blue dates have saved markers
+                📅 Black dates have saved markers
               </div>
               <IonButton expand="block" color="danger" onClick={() => {
                 setSelectedDate(new Date().toISOString().split('T')[0]);

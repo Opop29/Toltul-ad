@@ -584,8 +584,8 @@ const Report: React.FC = () => {
                             </div>
                             <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>
                               Total: {stats?.totalMarkers || 0} markers
-                            </div>
                           </div>
+                        </div>
 
                           {/* Timeline Items */}
                           <div style={{maxHeight: '300px', overflowY: 'auto'}}>
@@ -631,11 +631,11 @@ const Report: React.FC = () => {
                                     position: 'relative',
                                     overflow: 'hidden'
                                   }}>
-                                    <div
-                                      className="timeline-fill"
-                                      style={{
+                                <div
+                                  className="timeline-fill"
+                                  style={{
                                         width: `${percentage}%`,
-                                        height: '100%',
+                                    height: '100%',
                                         background: `linear-gradient(90deg, 
                                           rgba(67, 233, 123, ${0.3 + (intensity / 100) * 0.7}), 
                                           rgba(56, 249, 215, ${0.3 + (intensity / 100) * 0.7}))`,
@@ -803,10 +803,10 @@ const Report: React.FC = () => {
                                               </div>
                                             )}
                                           </div>
-                                        </div>
-                                      </div>
+                              </div>
+                            </div>
                                     </IonCol>
-                                  ))}
+                          ))}
                                 </IonRow>
                               </IonGrid>
                             </div>
