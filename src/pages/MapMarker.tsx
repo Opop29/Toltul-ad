@@ -65,6 +65,7 @@ const MapMarker: React.FC = () => {
   const [showPermanentMarks, setShowPermanentMarks] = useState<boolean>(true);
   const [showGroupMarks, setShowGroupMarks] = useState<boolean>(true);
   const [showDatedMarks, setShowDatedMarks] = useState<boolean>(true);
+  const [showOutdatedMarks, setShowOutdatedMarks] = useState<boolean>(false);
   const [markTypeOptions, setMarkTypeOptions] = useState<any[]>([]);
   const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
   const [groupName, setGroupName] = useState<string>('');
@@ -210,7 +211,7 @@ const MapMarker: React.FC = () => {
 
   useEffect(() => {
     addMarkersToMap(markers);
-  }, [selectedViewType, searchQuery, markers, showPermanentMarks, showGroupMarks, showDatedMarks]);
+  }, [selectedViewType, searchQuery, markers, showPermanentMarks, showGroupMarks, showDatedMarks, showOutdatedMarks]);
 
   // Immediate search update when searchQuery changes
   useEffect(() => {
@@ -279,6 +280,17 @@ const MapMarker: React.FC = () => {
    }
  };
 
+ const isMarkOutdated = (marker: any) => {
+   if (!marker.dates || marker.dates.length === 0) return false;
+   
+   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+   const latestDate = marker.dates.reduce((latest: string, current: string) => {
+     return current > latest ? current : latest;
+   }, marker.dates[0]);
+   
+   return latestDate < today;
+ };
+
  const getFilteredMarkers = useCallback(() => {
    return markers.filter(marker => {
      const matchesType = selectedViewType === 'all' || marker.mark_type.startsWith(selectedViewType);
@@ -296,14 +308,18 @@ const MapMarker: React.FC = () => {
      const isGroup = !!marker.group_name;
      const isDated = marker.dates && marker.dates.length > 0 && !isGroup;
      const isPermanent = !marker.dates || marker.dates.length === 0 && !isGroup;
+     const isOutdated = isMarkOutdated(marker);
 
      const matchesCategory = (showGroupMarks && isGroup) ||
                              (showDatedMarks && isDated) ||
                              (showPermanentMarks && isPermanent);
 
-     return matchesType && matchesSearch && matchesCategory;
+     // Hide outdated marks unless explicitly shown
+     const matchesOutdatedFilter = showOutdatedMarks || !isOutdated;
+
+     return matchesType && matchesSearch && matchesCategory && matchesOutdatedFilter;
    });
- }, [markers, selectedViewType, searchQuery, showGroupMarks, showDatedMarks, showPermanentMarks]);
+ }, [markers, selectedViewType, searchQuery, showGroupMarks, showDatedMarks, showPermanentMarks, showOutdatedMarks]);
 
  const filterMarkersByDate = (date: string) => {
    if (!mapRef.current) return;
@@ -582,6 +598,10 @@ const MapMarker: React.FC = () => {
                   <IonItem lines="none">
                     <IonLabel>View Dated Marks</IonLabel>
                     <IonToggle checked={showDatedMarks} onIonChange={(e) => setShowDatedMarks(e.detail.checked)} />
+                  </IonItem>
+                  <IonItem lines="none">
+                    <IonLabel>Show Outdated Marks</IonLabel>
+                    <IonToggle checked={showOutdatedMarks} onIonChange={(e) => setShowOutdatedMarks(e.detail.checked)} />
                   </IonItem>
 
                   {showMarkersList && (

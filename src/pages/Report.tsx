@@ -29,6 +29,9 @@ import {
   trendingUpOutline,
   mapOutline,
   timeOutline,
+  archiveOutline,
+  eyeOutline,
+  eyeOffOutline,
 } from "ionicons/icons";
 import { supabase } from "../utils/supabaseClient";
 import "../css/Home.css";
@@ -65,6 +68,7 @@ interface ReportStats {
   topLocations: { coords: string; count: number }[];
   dateDistribution: { month: string; count: number }[];
   averageHeight: number;
+  outdatedMarkers: Marker[];
 }
 
 const Report: React.FC = () => {
@@ -75,6 +79,17 @@ const Report: React.FC = () => {
   useIonViewDidEnter(() => {
     loadReportData();
   });
+
+  const isMarkOutdated = (marker: Marker) => {
+    if (!marker.dates || marker.dates.length === 0) return false;
+    
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const latestDate = marker.dates.reduce((latest: string, current: string) => {
+      return current > latest ? current : latest;
+    }, marker.dates[0]);
+    
+    return latestDate < today;
+  };
 
   const loadReportData = async () => {
     try {
@@ -109,6 +124,9 @@ const Report: React.FC = () => {
         ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
 
       const recentActivity = sortedMarkers.slice(0, 10);
+
+      // Filter outdated markers
+      const outdatedMarkers = markers?.filter(marker => isMarkOutdated(marker)) || [];
 
       // Initialize counters
       const markersByType: { [key: string]: number } = {};
@@ -172,6 +190,7 @@ const Report: React.FC = () => {
         topLocations,
         dateDistribution,
         averageHeight,
+        outdatedMarkers,
       });
 
     } catch (err) {
@@ -213,6 +232,20 @@ const Report: React.FC = () => {
       '#6c757d': 'Gray',
     };
     return colorMap[hexColor] || hexColor;
+  };
+
+  const getExpirationDate = (marker: Marker) => {
+    if (!marker.dates || marker.dates.length === 0) return 'No expiration';
+    
+    const latestDate = marker.dates.reduce((latest: string, current: string) => {
+      return current > latest ? current : latest;
+    }, marker.dates[0]);
+    
+    return new Date(latestDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -529,28 +562,255 @@ const Report: React.FC = () => {
                         <div className="action-content">
                           <IonIcon icon={calendarOutline} />
                           <div>
-                            <h3>Marker Creation Timeline</h3>
-                            <p>Monthly marker creation trends</p>
+                            <h3>📅 Marker Creation Timeline</h3>
+                            <p>Monthly marker creation trends and growth patterns</p>
                           </div>
                         </div>
-                        <div className="timeline-container" style={{marginTop: '16px'}}>
-                          {stats?.dateDistribution.map((item, index) => (
-                            <div key={item.month} className="timeline-item" style={{display: 'flex', alignItems: 'center', marginBottom: '8px'}}>
-                              <div className="timeline-month" style={{width: '80px', fontSize: '14px'}}>{item.month}</div>
-                              <div className="timeline-bar" style={{flex: 1, height: '12px', background: '#e0e0e0', borderRadius: '6px', margin: '0 12px'}}>
-                                <div
-                                  className="timeline-fill"
-                                  style={{
-                                    width: `${Math.max((item.count / (stats?.totalMarkers || 1)) * 100, 5)}%`,
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, #43e97b, #38f9d7)',
-                                    borderRadius: '6px'
-                                  }}
-                                ></div>
-                              </div>
-                              <div className="timeline-count" style={{width: '30px', textAlign: 'right', fontSize: '14px'}}>{item.count}</div>
+                        <div className="timeline-container" style={{marginTop: '20px'}}>
+                          {/* Timeline Header */}
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '16px',
+                            padding: '12px 16px',
+                            background: 'rgba(67, 233, 123, 0.1)',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(67, 233, 123, 0.2)'
+                          }}>
+                            <div style={{display: 'flex', alignItems: 'center'}}>
+                              <IonIcon icon={trendingUpOutline} style={{marginRight: '8px', color: '#43e97b'}} />
+                              <span style={{fontWeight: '600', fontSize: '14px'}}>Creation Activity</span>
                             </div>
-                          ))}
+                            <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>
+                              Total: {stats?.totalMarkers || 0} markers
+                            </div>
+                          </div>
+
+                          {/* Timeline Items */}
+                          <div style={{maxHeight: '300px', overflowY: 'auto'}}>
+                            {stats?.dateDistribution.map((item, index) => {
+                              const percentage = Math.max((item.count / (stats?.totalMarkers || 1)) * 100, 2);
+                              const maxCount = Math.max(...(stats?.dateDistribution.map(d => d.count) || [1]));
+                              const intensity = (item.count / maxCount) * 100;
+                              
+                              return (
+                                <div key={item.month} className="timeline-item" style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  marginBottom: '12px',
+                                  padding: '12px',
+                                  background: 'rgba(255,255,255,0.03)',
+                                  borderRadius: '8px',
+                                  border: '1px solid rgba(255,255,255,0.05)',
+                                  transition: 'all 0.3s ease'
+                                }}>
+                                  {/* Month Label */}
+                                  <div className="timeline-month" style={{
+                                    width: '100px', 
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    color: 'rgba(255,255,255,0.9)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start'
+                                  }}>
+                                    <span>{new Date(item.month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                    <span style={{fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '400'}}>
+                                      {new Date(item.month + '-01').toLocaleDateString('en-US', { month: 'long' })}
+                                    </span>
+                                  </div>
+
+                                  {/* Progress Bar */}
+                                  <div className="timeline-bar" style={{
+                                    flex: 1, 
+                                    height: '16px', 
+                                    background: 'rgba(255,255,255,0.1)', 
+                                    borderRadius: '8px', 
+                                    margin: '0 16px',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                  }}>
+                                    <div
+                                      className="timeline-fill"
+                                      style={{
+                                        width: `${percentage}%`,
+                                        height: '100%',
+                                        background: `linear-gradient(90deg, 
+                                          rgba(67, 233, 123, ${0.3 + (intensity / 100) * 0.7}), 
+                                          rgba(56, 249, 215, ${0.3 + (intensity / 100) * 0.7}))`,
+                                        borderRadius: '8px',
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease'
+                                      }}
+                                    >
+                                      {/* Animated shine effect */}
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: '-100%',
+                                        width: '100%',
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                                        animation: 'shine 2s infinite'
+                                      }}></div>
+                                    </div>
+                                    
+                                    {/* Percentage label on bar */}
+                                    {percentage > 15 && (
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        fontSize: '10px',
+                                        fontWeight: '600',
+                                        color: 'white',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                      }}>
+                                        {percentage.toFixed(0)}%
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Count and Growth Indicator */}
+                                  <div className="timeline-count" style={{
+                                    width: '80px', 
+                                    textAlign: 'right',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end'
+                                  }}>
+                                    <div style={{fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.9)'}}>
+                                      {item.count}
+                                    </div>
+                                    <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.5)'}}>
+                                      marker{item.count !== 1 ? 's' : ''}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Timeline Summary */}
+                          {stats?.dateDistribution && stats.dateDistribution.length > 0 && (
+                            <div style={{
+                              marginTop: '16px',
+                              padding: '12px',
+                              background: 'rgba(67, 233, 123, 0.05)',
+                              borderRadius: '8px',
+                              border: '1px solid rgba(67, 233, 123, 0.1)'
+                            }}>
+                              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>
+                                  📊 Most Active: {stats.dateDistribution.reduce((max, item) => 
+                                    item.count > max.count ? item : max
+                                  ).month} ({Math.max(...stats.dateDistribution.map(d => d.count))} markers)
+                                </div>
+                                <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.7)'}}>
+                                  📈 Average: {(stats.dateDistribution.reduce((sum, item) => sum + item.count, 0) / stats.dateDistribution.length).toFixed(1)} per month
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                </IonRow>
+
+                {/* Outdated Marks History Panel */}
+                <IonRow>
+                  <IonCol size="12">
+                    <IonCard className="action-card">
+                      <IonCardContent>
+                        <div className="action-content">
+                          <IonIcon icon={archiveOutline} />
+                          <div>
+                            <h3>📚 Outdated Marks History</h3>
+                            <p>Markers that have expired and are no longer active</p>
+                          </div>
+                        </div>
+                        <div className="outdated-marks-container" style={{marginTop: '16px'}}>
+                          {stats?.outdatedMarkers.length === 0 ? (
+                            <div style={{ 
+                              textAlign: 'center', 
+                              padding: '20px', 
+                              color: 'rgba(255,255,255,0.7)',
+                              fontSize: '14px'
+                            }}>
+                              <IonIcon icon={eyeOffOutline} size="large" style={{marginBottom: '8px'}} />
+                              <p>No outdated marks found</p>
+                              <p style={{fontSize: '12px'}}>All markers are currently active</p>
+                            </div>
+                          ) : (
+                            <div className="outdated-marks-list">
+                              <div style={{ 
+                                padding: '8px 12px', 
+                                background: 'rgba(220, 53, 69, 0.1)', 
+                                borderRadius: '8px', 
+                                marginBottom: '12px',
+                                fontSize: '12px',
+                                color: 'rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(220, 53, 69, 0.3)'
+                              }}>
+                                📊 {stats?.outdatedMarkers.length} outdated marker{stats?.outdatedMarkers.length !== 1 ? 's' : ''} found
+                              </div>
+                              <IonGrid>
+                                <IonRow>
+                                  {stats?.outdatedMarkers.map((marker, index) => (
+                                    <IonCol size="12" sizeMd="6" sizeLg="3" key={marker.id || index}>
+                                      <div className="outdated-marker-item" style={{
+                                        display: 'flex', 
+                                        flexDirection: 'column',
+                                        alignItems: 'center', 
+                                        marginBottom: '12px',
+                                        padding: '12px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        textAlign: 'center',
+                                        minHeight: '140px'
+                                      }}>
+                                        <div className="marker-icon" style={{marginBottom: '8px'}}>
+                                          <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '50%',
+                                            backgroundColor: marker.color || '#007cf0',
+                                            border: '2px solid rgba(255,255,255,0.3)',
+                                            margin: '0 auto'
+                                          }}></div>
+                                        </div>
+                                        <div className="marker-content" style={{flex: 1, width: '100%'}}>
+                                          <div className="marker-title" style={{fontWeight: '600', fontSize: '14px', marginBottom: '6px', lineHeight: '1.2'}}>
+                                            {marker.label}
+                                          </div>
+                                          <div className="marker-meta" style={{fontSize: '11px', color: 'rgba(255,255,255,0.6)'}}>
+                                            <div style={{marginBottom: '4px'}}>
+                                              <span style={{display: 'block'}}>{marker.mark_type}</span>
+                                            </div>
+                                            <div style={{color: '#ff6b6b', marginBottom: '4px', fontSize: '10px'}}>
+                                              Expired: {getExpirationDate(marker)}
+                                            </div>
+                                            <div style={{fontSize: '10px', opacity: 0.8}}>
+                                              📍 {marker.lat.toFixed(3)}, {marker.lng.toFixed(3)}
+                                            </div>
+                                            {marker.group_name && (
+                                              <div style={{fontSize: '10px', opacity: 0.8, marginTop: '2px'}}>
+                                                👥 {marker.group_name} #{marker.group_index}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </IonCol>
+                                  ))}
+                                </IonRow>
+                              </IonGrid>
+                            </div>
+                          )}
                         </div>
                       </IonCardContent>
                     </IonCard>

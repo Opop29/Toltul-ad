@@ -25,6 +25,11 @@
   66% { transform: translateY(10px) rotate(-1deg); }
 }
 
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
 .home-hero {
   padding: 50px 30px 40px;
   color: #ffffff;
