@@ -187,13 +187,13 @@ const Home: React.FC = () => {
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp9gZnSEdoA-GxkfjMOZy_NaQPGNM2OIRu9jysFNX_g3kY3zqYz8ii8sVO7-FbywES96A&usqp=CAU" alt="Logo" className="app-logo enhanced-logo" />
                   </div>
                   <h1 className="home-title">
-                    <span className="title-main">🏛️ Toltul</span>
+                    <span className="title-main">🏛️ Tultol</span>
                     <span className="title-accent">-AD</span>
                   </h1>
                   <div className="hero-taglines">
                     <p className="tagline-primary">Welcome back! Administer your AR marker ecosystem</p>
                     <p className="tagline-secondary">✨ Manage • Monitor • Control</p>
-                    <p className="tagline-tertiary">🚀 Admin Panel for Toltula-AR</p>
+                    <p className="tagline-tertiary">🚀 Admin Panel for Tultola-AR</p>
                   </div>
                 </div>
               </div>

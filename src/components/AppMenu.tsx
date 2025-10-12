@@ -55,7 +55,7 @@ const AppMenu: React.FC = () => {
             className="sidebar-logo"
           />
           <div className="sidebar-brand-text">
-            <h1 className="sidebar-title">Toltul-AD</h1>
+            <h1 className="sidebar-title">Tultol-AD</h1>
             <p className="sidebar-subtitle">admin for Augmented Reality application</p>
           </div>
         </div>

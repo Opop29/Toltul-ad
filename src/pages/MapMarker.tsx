@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -212,6 +212,14 @@ const MapMarker: React.FC = () => {
     addMarkersToMap(markers);
   }, [selectedViewType, searchQuery, markers, showPermanentMarks, showGroupMarks, showDatedMarks]);
 
+  // Immediate search update when searchQuery changes
+  useEffect(() => {
+    if (mapRef.current) {
+      console.log('Search query changed to:', searchQuery);
+      addMarkersToMap(markers);
+    }
+  }, [searchQuery]);
+
   useEffect(() => {
     if (!mapRef.current) return;
     const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
@@ -271,15 +279,19 @@ const MapMarker: React.FC = () => {
    }
  };
 
- const getFilteredMarkers = () => {
+ const getFilteredMarkers = useCallback(() => {
    return markers.filter(marker => {
      const matchesType = selectedViewType === 'all' || marker.mark_type.startsWith(selectedViewType);
      const query = searchQuery.toLowerCase().trim();
+     
+     // Enhanced search functionality - case insensitive and searches multiple fields
      const matchesSearch = query === '' ||
        marker.label.toLowerCase().includes(query) ||
        marker.mark_type.toLowerCase().includes(query) ||
        marker.lat.toString().includes(query) ||
-       marker.lng.toString().includes(query);
+       marker.lng.toString().includes(query) ||
+       (marker.group_name && marker.group_name.toLowerCase().includes(query)) ||
+       (marker.color && marker.color.toLowerCase().includes(query));
 
      const isGroup = !!marker.group_name;
      const isDated = marker.dates && marker.dates.length > 0 && !isGroup;
@@ -291,7 +303,7 @@ const MapMarker: React.FC = () => {
 
      return matchesType && matchesSearch && matchesCategory;
    });
- };
+ }, [markers, selectedViewType, searchQuery, showGroupMarks, showDatedMarks, showPermanentMarks]);
 
  const filterMarkersByDate = (date: string) => {
    if (!mapRef.current) return;
@@ -314,6 +326,13 @@ const MapMarker: React.FC = () => {
    markerRefs.current.forEach(marker => marker.remove());
    markerRefs.current = [];
    const filtered = getFilteredMarkers();
+   
+   // Add visual feedback when no results are found
+   if (filtered.length === 0 && searchQuery.trim() !== '') {
+     // You could add a notification here if needed
+     console.log('No markers found for search query:', searchQuery);
+   }
+   
    filtered.forEach(marker => {
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}${marker.group_name ? `<br>Group: ${marker.group_name} #${marker.group_index}` : ''}`);
      let mapMarker;
@@ -422,21 +441,39 @@ const MapMarker: React.FC = () => {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 10,
-              background: 'rgba(255,255,255,0.9)',
-              borderRadius: '20px',
-              padding: '5px 10px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '25px',
+              padding: '8px 15px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               display: 'flex',
               alignItems: 'center',
-              gap: '5px'
+              gap: '8px',
+              border: '1px solid rgba(0,0,0,0.1)',
+              minWidth: '250px'
             }}>
               <IonIcon icon={search} color="medium" />
               <IonInput
                 value={searchQuery}
                 placeholder="Search markers..."
                 onIonChange={(e) => setSearchQuery(e.detail.value!)}
-                style={{width: '200px', '--placeholder-color': 'var(--ion-color-medium)'}}
+                onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
+                onKeyUp={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
+                style={{
+                  width: '180px', 
+                  '--placeholder-color': 'var(--ion-color-medium)',
+                  '--color': 'var(--ion-color-dark)'
+                }}
               />
+              {searchQuery && (
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  onClick={() => setSearchQuery('')}
+                  style={{ '--padding-start': '4px', '--padding-end': '4px' }}
+                >
+                  <IonIcon icon={close} color="medium" />
+                </IonButton>
+              )}
             </div>
           </div>
 
@@ -549,26 +586,48 @@ const MapMarker: React.FC = () => {
 
                   {showMarkersList && (
                     <div className="markers-list">
-                      {getFilteredMarkers().map(marker => (
-                        <div key={marker.id} className="marker-item">
-                          <span className="marker-label">{marker.label}</span>
-                          <IonButton
-                            size="small"
-                            onClick={() => {
-                              if (mapRef.current) {
-                                mapRef.current.flyTo({
-                                  center: [marker.lng, marker.lat],
-                                  zoom: 18,
-                                  duration: 2000,
-                                  essential: true,
-                                });
-                              }
-                            }}
-                          >
-                            View
-                          </IonButton>
+                      <div style={{ 
+                        padding: '8px 12px', 
+                        background: 'rgba(0,0,0,0.05)', 
+                        borderRadius: '8px', 
+                        marginBottom: '8px',
+                        fontSize: '12px',
+                        color: 'var(--ion-color-medium)'
+                      }}>
+                        {getFilteredMarkers().length} marker{getFilteredMarkers().length !== 1 ? 's' : ''} found
+                        {searchQuery && ` for "${searchQuery}"`}
+                      </div>
+                      {getFilteredMarkers().length === 0 && searchQuery ? (
+                        <div style={{ 
+                          textAlign: 'center', 
+                          padding: '20px', 
+                          color: 'var(--ion-color-medium)',
+                          fontSize: '14px'
+                        }}>
+                          No markers found for "{searchQuery}"
                         </div>
-                      ))}
+                      ) : (
+                        getFilteredMarkers().map(marker => (
+                          <div key={marker.id} className="marker-item">
+                            <span className="marker-label">{marker.label}</span>
+                            <IonButton
+                              size="small"
+                              onClick={() => {
+                                if (mapRef.current) {
+                                  mapRef.current.flyTo({
+                                    center: [marker.lng, marker.lat],
+                                    zoom: 18,
+                                    duration: 2000,
+                                    essential: true,
+                                  });
+                                }
+                              }}
+                            >
+                              View
+                            </IonButton>
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
 
