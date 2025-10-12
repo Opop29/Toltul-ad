@@ -72,6 +72,7 @@ const MapMarker: React.FC = () => {
   const [groupColor, setGroupColor] = useState<string>('#007cf0');
   const [groupMarkers, setGroupMarkers] = useState<any[]>([]);
   const [isAddingGroup, setIsAddingGroup] = useState<boolean>(false);
+  const [datesWithMarks, setDatesWithMarks] = useState<string[]>([]);
 
 
 
@@ -268,6 +269,15 @@ const MapMarker: React.FC = () => {
    } else {
      setMarkers(data || []);
      addMarkersToMap(data || []);
+     
+     // Extract all dates that have marks
+     const allDates = new Set<string>();
+     data?.forEach(marker => {
+       if (marker.dates && Array.isArray(marker.dates)) {
+         marker.dates.forEach(date => allDates.add(date));
+       }
+     });
+     setDatesWithMarks(Array.from(allDates));
    }
  };
 
@@ -289,6 +299,19 @@ const MapMarker: React.FC = () => {
    }, marker.dates[0]);
    
    return latestDate < today;
+ };
+
+ const isDateValid = (date: string) => {
+   const today = new Date().toISOString().split('T')[0];
+   return date >= today;
+ };
+
+ const validateMarkerDates = (dates: string[]) => {
+   const invalidDates = dates.filter(date => !isDateValid(date));
+   return {
+     isValid: invalidDates.length === 0,
+     invalidDates: invalidDates
+   };
  };
 
  const getFilteredMarkers = useCallback(() => {
@@ -388,6 +411,16 @@ const MapMarker: React.FC = () => {
      alert('Please fill all fields');
      return;
    }
+
+   // Validate dates if any are provided
+   if (markerDates.length > 0) {
+     const validation = validateMarkerDates(markerDates);
+     if (!validation.isValid) {
+       alert(`Cannot save marker with outdated dates: ${validation.invalidDates.join(', ')}. Please select today's date or future dates only.`);
+       return;
+     }
+   }
+
    const { error } = await supabase.from('ar_pois').insert({
      lat: selectedCoords[1],
      lng: selectedCoords[0],
@@ -414,6 +447,16 @@ const MapMarker: React.FC = () => {
      alert('Please enter group name and add markers');
      return;
    }
+
+   // Validate dates if any are provided
+   if (markerDates.length > 0) {
+     const validation = validateMarkerDates(markerDates);
+     if (!validation.isValid) {
+       alert(`Cannot save group with outdated dates: ${validation.invalidDates.join(', ')}. Please select today's date or future dates only.`);
+       return;
+     }
+   }
+
    const markersToInsert = groupMarkers.map((marker, index) => ({
      lat: marker.coords[1],
      lng: marker.coords[0],
@@ -667,7 +710,15 @@ const MapMarker: React.FC = () => {
                   setSelectedDate(date);
                   filterMarkersByDate(date);
                 }}
+                highlightedDates={datesWithMarks.map(date => ({
+                  date: date,
+                  textColor: '#ffffff',
+                  backgroundColor: '#007cf0'
+                }))}
               />
+              <div style={{marginBottom: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.7)', textAlign: 'center'}}>
+                📅 Blue dates have saved markers
+              </div>
               <IonButton expand="block" color="danger" onClick={() => {
                 setSelectedDate(new Date().toISOString().split('T')[0]);
                 addMarkersToMap(markers);
@@ -729,13 +780,19 @@ const MapMarker: React.FC = () => {
             }} placeholder="Longitude" />
           </IonItem>
           <IonItem style={{marginBottom: '10px'}}>
-            <IonLabel position="stacked">Dates</IonLabel>
+            <IonLabel position="stacked">Dates (Can view past, but only future dates can be saved)</IonLabel>
             <IonDatetime
               presentation="date"
               multiple={true}
               value={markerDates}
-              onIonChange={(e) => setMarkerDates(e.detail.value as string[])}
+              onIonChange={(e) => {
+                const dates = e.detail.value as string[];
+                setMarkerDates(dates);
+              }}
             />
+            <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.6)', marginTop: '4px'}}>
+              ⚠️ You can view past dates, but only today's date and future dates can be saved
+            </div>
           </IonItem>
           <IonButton expand="full" onClick={handleSaveMarker} color="primary">
             <IonIcon icon={checkmark} slot="start" />
@@ -777,13 +834,19 @@ const MapMarker: React.FC = () => {
             </IonSelect>
           </IonItem>
           <IonItem style={{marginBottom: '10px'}}>
-            <IonLabel position="stacked">Dates</IonLabel>
+            <IonLabel position="stacked">Dates (Can view past, but only future dates can be saved)</IonLabel>
             <IonDatetime
               presentation="date"
               multiple={true}
               value={markerDates}
-              onIonChange={(e) => setMarkerDates(e.detail.value as string[])}
+              onIonChange={(e) => {
+                const dates = e.detail.value as string[];
+                setMarkerDates(dates);
+              }}
             />
+            <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.6)', marginTop: '4px'}}>
+              ⚠️ You can view past dates, but only today's date and future dates can be saved
+            </div>
           </IonItem>
           <IonButton expand="full" onClick={handleSaveGroup} color="primary">
             <IonIcon icon={checkmark} slot="start" />
