@@ -116,19 +116,15 @@ const Report: React.FC = () => {
 
       if (markersError) throw markersError;
 
-      // Calculate statistics
       const totalMarkers = markers?.length || 0;
 
-      // Sort markers for recent activity
       const sortedMarkers = markers
         ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
 
       const recentActivity = sortedMarkers.slice(0, 10);
 
-      // Filter outdated markers
       const outdatedMarkers = markers?.filter(marker => isMarkOutdated(marker)) || [];
 
-      // Initialize counters
       const markersByType: { [key: string]: number } = {};
       const markersByColor: { [key: string]: number } = {};
       const markersByCategory: { [key: string]: number } = {};
@@ -137,33 +133,25 @@ const Report: React.FC = () => {
       let totalGroups = 0;
       let totalHeight = 0;
 
-      // Process all markers in a single loop for performance
       markers?.forEach(marker => {
-        // Count by type
         const type = marker.mark_type || 'Unknown';
         markersByType[type] = (markersByType[type] || 0) + 1;
 
-        // Count by color
         const color = marker.color || '#007cf0';
         markersByColor[color] = (markersByColor[color] || 0) + 1;
 
-        // Count by category
         const category = typeToCategory[type] || 'Other';
         markersByCategory[category] = (markersByCategory[category] || 0) + 1;
 
-        // Count groups
         if (marker.group_name) totalGroups++;
 
-        // Sum heights for average
         totalHeight += marker.height || 1;
 
-        // Location distribution
         const lat = Math.round(marker.lat * 10) / 10;
         const lng = Math.round(marker.lng * 10) / 10;
         const key = `${lat},${lng}`;
         locationGroups[key] = (locationGroups[key] || 0) + 1;
 
-        // Date distribution
         const date = new Date(marker.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         dateGroups[monthKey] = (dateGroups[monthKey] || 0) + 1;

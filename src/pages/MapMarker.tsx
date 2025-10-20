@@ -185,8 +185,8 @@ const MapMarker: React.FC = () => {
       if (is3D) {
         enable3D();
       }
-      loadMarkers(); // Load markers after map is loaded
-      loadMarkTypes(); // Load mark types
+      loadMarkers(); 
+      loadMarkTypes(); 
     });
 
     return () => {
@@ -214,7 +214,6 @@ const MapMarker: React.FC = () => {
     addMarkersToMap(markers);
   }, [selectedViewType, searchQuery, markers, showPermanentMarks, showGroupMarks, showDatedMarks, showOutdatedMarks]);
 
-  // Immediate search update when searchQuery changes
   useEffect(() => {
     if (mapRef.current) {
       console.log('Search query changed to:', searchQuery);
@@ -233,7 +232,6 @@ const MapMarker: React.FC = () => {
       } else if (isAddingGroup) {
         const coords = e.lngLat.toArray() as [number, number];
         setGroupMarkers(prev => [...prev, { coords, index: prev.length + 1 }]);
-        // Add temporary marker
         new mapboxgl.Marker({ color: groupColor })
           .setLngLat([coords[0], coords[1]])
           .addTo(mapRef.current!);
@@ -270,7 +268,6 @@ const MapMarker: React.FC = () => {
      setMarkers(data || []);
      addMarkersToMap(data || []);
      
-     // Extract all dates that have marks
      const allDates = new Set<string>();
      data?.forEach(marker => {
        if (marker.dates && Array.isArray(marker.dates)) {
@@ -293,7 +290,7 @@ const MapMarker: React.FC = () => {
  const isMarkOutdated = (marker: any) => {
    if (!marker.dates || marker.dates.length === 0) return false;
    
-   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+   const today = new Date().toISOString().split('T')[0]; 
    const latestDate = marker.dates.reduce((latest: string, current: string) => {
      return current > latest ? current : latest;
    }, marker.dates[0]);
@@ -319,7 +316,6 @@ const MapMarker: React.FC = () => {
      const matchesType = selectedViewType === 'all' || marker.mark_type.startsWith(selectedViewType);
      const query = searchQuery.toLowerCase().trim();
      
-     // Enhanced search functionality - case insensitive and searches multiple fields
      const matchesSearch = query === '' ||
        marker.label.toLowerCase().includes(query) ||
        marker.mark_type.toLowerCase().includes(query) ||
@@ -337,7 +333,6 @@ const MapMarker: React.FC = () => {
                              (showDatedMarks && isDated) ||
                              (showPermanentMarks && isPermanent);
 
-     // Hide outdated marks unless explicitly shown
      const matchesOutdatedFilter = showOutdatedMarks || !isOutdated;
 
      return matchesType && matchesSearch && matchesCategory && matchesOutdatedFilter;
@@ -346,7 +341,6 @@ const MapMarker: React.FC = () => {
 
  const filterMarkersByDate = (date: string) => {
    if (!mapRef.current) return;
-   // Remove existing markers
    markerRefs.current.forEach(marker => marker.remove());
    markerRefs.current = [];
    const filtered = markers.filter(marker => marker.dates && marker.dates.includes(date));
@@ -366,9 +360,7 @@ const MapMarker: React.FC = () => {
    markerRefs.current = [];
    const filtered = getFilteredMarkers();
    
-   // Add visual feedback when no results are found
    if (filtered.length === 0 && searchQuery.trim() !== '') {
-     // You could add a notification here if needed
      console.log('No markers found for search query:', searchQuery);
    }
    
@@ -376,7 +368,6 @@ const MapMarker: React.FC = () => {
      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${marker.label}</strong><br>Type: ${marker.mark_type}<br>Lat: ${marker.lat}<br>Lng: ${marker.lng}${marker.group_name ? `<br>Group: ${marker.group_name} #${marker.group_index}` : ''}`);
      let mapMarker;
      if (marker.group_index) {
-       // For group markers, use custom element with number
        const el = document.createElement('div');
        el.style.backgroundColor = marker.color || '#007cf0';
        el.style.width = '30px';
@@ -395,7 +386,6 @@ const MapMarker: React.FC = () => {
          .setLngLat([marker.lng, marker.lat])
          .setPopup(popup);
      } else {
-       // For other markers, use default marker
        mapMarker = new mapboxgl.Marker({ color: marker.color || '#007cf0' })
          .setLngLat([marker.lng, marker.lat])
          .setPopup(popup);
@@ -412,7 +402,6 @@ const MapMarker: React.FC = () => {
      return;
    }
 
-   // Validate dates if any are provided
    if (markerDates.length > 0) {
      const validation = validateMarkerDates(markerDates);
      if (!validation.isValid) {
@@ -448,7 +437,6 @@ const MapMarker: React.FC = () => {
      return;
    }
 
-   // Validate dates if any are provided
    if (markerDates.length > 0) {
      const validation = validateMarkerDates(markerDates);
      if (!validation.isValid) {

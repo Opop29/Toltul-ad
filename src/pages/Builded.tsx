@@ -146,7 +146,7 @@ const Builded: React.FC = () => {
           el.style.fontSize = '12px';
           el.style.fontWeight = 'bold';
           el.style.color = 'white';
-          el.textContent = (index + 1).toString(); // Show marker number within group
+          el.textContent = (index + 1).toString(); 
           el.setAttribute('aria-label', 'Map marker');
 
           new mapboxgl.Marker({ element: el })
@@ -245,7 +245,7 @@ const Builded: React.FC = () => {
         .from("ar_pois")
         .delete()
         .eq("id", p.id)
-        .select(); // Add select to see what was deleted
+        .select(); 
 
       console.log('Supabase delete response - data:', data, 'error:', error);
 
@@ -267,7 +267,7 @@ const Builded: React.FC = () => {
       setMapLocation(null);
       console.log('Delete operation completed');
 
-      // Automatic page refresh after delete
+    
       setTimeout(() => {
         window.location.reload();
       }, 500);
@@ -369,7 +369,6 @@ const Builded: React.FC = () => {
     setSelected(null);
     setMapLocation(null);
 
-    // Automatic page refresh after delete
     setTimeout(() => {
       window.location.reload();
     }, 500);
@@ -402,7 +401,6 @@ async function deleteAll() {
     setSelected(null);
     setMapLocation(null);
 
-    // Automatic page refresh after delete
     setTimeout(() => {
       window.location.reload();
     }, 500);
