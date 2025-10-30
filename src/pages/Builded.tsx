@@ -63,6 +63,12 @@ const Builded: React.FC = () => {
   }>({ isOpen: false, type: 'single' });
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const isOutdated = (poi: POI): boolean => {
+    if (!poi.dates || poi.dates.length === 0) return false;
+    const today = new Date().toISOString().split('T')[0];
+    return poi.dates.some(d => d < today);
+  };
+
   const getFilteredPois = (): DisplayItem[] => {
     const filtered = pois.filter(p => {
       if (!showPermanentMarks && !p.dates?.length) return false;
@@ -473,7 +479,25 @@ async function deleteAll() {
                       if ('isGroup' in item) {
                         
                         return (
-                          <div key={`group-${item.group_name}-${item.group_index}`} className="poi-item">
+                          <div key={`group-${item.group_name}-${item.group_index}`} className="poi-item" style={{position: 'relative'}}>
+                            {item.markers.some(m => isOutdated(m)) && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '8px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                backgroundColor: '#ff4757',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold',
+                                zIndex: 10,
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              }}>
+                                HAS OUTDATED
+                              </div>
+                            )}
                             <div style={{position: 'absolute', top: '12px', right: '12px'}}>
                               <input type="checkbox" checked={item.markers.every(m => checkedIds.includes(m.id!))} onChange={() => {
                                 const allChecked = item.markers.every(m => checkedIds.includes(m.id!));
@@ -489,6 +513,20 @@ async function deleteAll() {
                               <span className="poi-type">{item.mark_type} (Group)</span>
                               <span className="poi-color" style={{backgroundColor: item.color}}></span>
                               <span className="poi-height">{item.markers.length} markers</span>
+                              {item.markers.some(m => isOutdated(m)) && (
+                                <div style={{
+                                  marginTop: '8px',
+                                  padding: '6px 10px',
+                                  backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                                  border: '1px solid rgba(255, 71, 87, 0.3)',
+                                  borderRadius: '6px',
+                                  color: '#ff4757',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '500'
+                                }}>
+                                  ⚠️ This group contains outdated marks - please review and update them
+                                </div>
+                              )}
                             </div>
                             <div className="poi-actions">
                               <button className="btn view" onClick={() => setSelected(item.markers[0])}>Details</button>
@@ -500,7 +538,25 @@ async function deleteAll() {
                         );
                       } else {
                         return (
-                          <div key={item.id} className="poi-item">
+                          <div key={item.id} className="poi-item" style={{position: 'relative'}}>
+                            {isOutdated(item) && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '8px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                backgroundColor: '#ff4757',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold',
+                                zIndex: 10,
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              }}>
+                                OUTDATED
+                              </div>
+                            )}
                             <div style={{position: 'absolute', top: '12px', right: '12px'}}>
                               <input type="checkbox" checked={checkedIds.includes(item.id!)} onChange={() => handleCheck(item.id!)} />
                             </div>
@@ -510,6 +566,20 @@ async function deleteAll() {
                               <span className="poi-type">{item.mark_type}</span>
                               <span className="poi-color" style={{backgroundColor: item.color}}></span>
                               <span className="poi-height">Height: {item.height}m</span>
+                              {isOutdated(item) && (
+                                <div style={{
+                                  marginTop: '8px',
+                                  padding: '6px 10px',
+                                  backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                                  border: '1px solid rgba(255, 71, 87, 0.3)',
+                                  borderRadius: '6px',
+                                  color: '#ff4757',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '500'
+                                }}>
+                                  ⚠️ This mark is outdated - please update or remove it
+                                </div>
+                              )}
                             </div>
                             <div className="poi-actions">
                               <button className="btn view" onClick={() => setSelected(item)}>Details</button>
@@ -648,8 +718,19 @@ async function deleteAll() {
                                 <div style={{marginBottom: '4px'}}>
                                   <strong>📍 Coordinates:</strong> {marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}
                                 </div>
-                                <div>
+                                <div style={{marginBottom: '4px'}}>
                                   <strong>📏 Height:</strong> {marker.height}m
+                                </div>
+                                <div>
+                                  {marker.dates && marker.dates.length > 0 ? (
+                                    marker.dates.length === 1 ? (
+                                      <><strong>📅 Saved on:</strong> {new Date(marker.dates[0]).toLocaleDateString()}</>
+                                    ) : (
+                                      <><strong>📅 Saved on multiple dates:</strong> {marker.dates.map(d => new Date(d).toLocaleDateString()).join(', ')}</>
+                                    )
+                                  ) : (
+                                    <><strong>This is a permanent mark</strong></>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -670,6 +751,15 @@ async function deleteAll() {
                         <p><strong>Label:</strong> {selected.label}</p>
                         <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
                         <p><strong>Height:</strong> {selected.height}m</p>
+                        {selected.dates && selected.dates.length > 0 ? (
+                          selected.dates.length === 1 ? (
+                            <p><strong>Saved on:</strong> {new Date(selected.dates[0]).toLocaleDateString()}</p>
+                          ) : (
+                            <p><strong>Saved on multiple dates:</strong> {selected.dates.map(d => new Date(d).toLocaleDateString()).join(', ')}</p>
+                          )
+                        ) : (
+                          <p><strong>This is a permanent mark</strong></p>
+                        )}
                         {selected.group_name && (() => {
                           const group = getFilteredPois().find(item =>
                             'isGroup' in item && item.markers.some(m => m.id === selected.id)

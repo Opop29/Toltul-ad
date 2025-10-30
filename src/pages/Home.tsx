@@ -65,7 +65,6 @@ const Home: React.FC = () => {
     try {
       setLoading(true);
 
-      // Get total markers and recent ones
       const { data: markers, error } = await supabase
         .from("ar_pois")
         .select("id, label, mark_type, color, created_at, lat, lng")
@@ -76,7 +75,7 @@ const Home: React.FC = () => {
       const totalMarkers = markers?.length || 0;
       const recentMarkers = markers?.slice(0, 5) || [];
 
-      // Count by type
+  
       const markersByType: { [key: string]: number } = {};
       markers?.forEach(marker => {
         const type = marker.mark_type || 'Unknown';
@@ -251,7 +250,7 @@ const Home: React.FC = () => {
                     </IonCol>
 
                     <IonCol size="6" sizeMd="6" sizeLg="3">
-                      <IonCard className="stat-card quick-actions">
+                      <IonCard className="stat-card quick-actions" onClick={() => navigateTo('/Toltul-ad/MapMarker')}>
                         <IonCardContent>
                           <div className="stat-icon">
                             <IonIcon icon={addCircleOutline} />
