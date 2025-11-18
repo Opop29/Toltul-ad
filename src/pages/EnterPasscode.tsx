@@ -166,13 +166,15 @@ const EnterPasscode: React.FC = () => {
             {
               text: "OK",
               handler: () => {
-                try { window.location.href = "/Toltul-ad/home"; } catch {}
+                console.log("Navigating to /Toltul-ad/home via alert OK");
+                try { history.push("/Toltul-ad/home"); } catch (error) { console.error("Navigation failed:", error); }
               },
             },
           ]}
           onDidDismiss={() => {
             if (showWelcome) {
-              try { window.location.href = "/Toltul-ad/home"; } catch {}
+              console.log("Navigating to /Toltul-ad/home via alert dismiss");
+              try { history.push("/Toltul-ad/home"); } catch (error) { console.error("Navigation failed:", error); }
             }
           }}
         />
