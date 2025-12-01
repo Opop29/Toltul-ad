@@ -599,7 +599,6 @@ async function deleteAll() {
                               <span className="poi-coords">{item.lat.toFixed(5)}, {item.lng.toFixed(5)}</span>
                               <span className="poi-type">{item.mark_type}</span>
                               <span className="poi-color" style={{backgroundColor: item.color}}></span>
-                              <span className="poi-height">Height: {item.height}m</span>
                               {isOutdated(item) && (
                                 <div style={{
                                   marginTop: '8px',
@@ -752,9 +751,6 @@ async function deleteAll() {
                                 <div style={{marginBottom: '4px'}}>
                                   <strong>📍 Coordinates:</strong> {marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}
                                 </div>
-                                <div style={{marginBottom: '4px'}}>
-                                  <strong>📏 Height:</strong> {marker.height}m
-                                </div>
                                 <div>
                                   {marker.dates && marker.dates.length > 0 ? (
                                     marker.dates.length === 1 ? (
@@ -784,7 +780,6 @@ async function deleteAll() {
                         <p><strong>Color:</strong> <span style={{backgroundColor: selected.color, display: 'inline-block', width: '20px', height: '20px', borderRadius: '50%', marginLeft: '8px'}}></span> {selected.color}</p>
                         <p><strong>Label:</strong> {selected.label}</p>
                         <p><strong>Coordinates:</strong> {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</p>
-                        <p><strong>Height:</strong> {selected.height}m</p>
                         {selected.dates && selected.dates.length > 0 ? (
                           selected.dates.length === 1 ? (
                             <p><strong>Saved on:</strong> {new Date(selected.dates[0]).toLocaleDateString()}</p>
@@ -1018,21 +1013,6 @@ async function deleteAll() {
                           )}
                         </div>
                       </div>
-                      <div>
-                        <label>Height (m)</label>
-                        <input
-                          className="input"
-                          type="number"
-                          min={1}
-                          value={selected.height}
-                          onChange={(e) => setSelected({ ...selected, height: Number(e.target.value) })}
-                        />
-                        {selected.height < 1 && (
-                          <div style={{color: '#e53e3e', fontSize: '0.8rem', marginTop: '4px'}}>
-                            Height must be at least 1 meter
-                          </div>
-                        )}
-                      </div>
 
                       {/* Location Preview */}
                       <div style={{marginTop: '16px', padding: '12px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '8px', border: '1px solid rgba(0, 124, 240, 0.2)'}}>
@@ -1041,7 +1021,7 @@ async function deleteAll() {
                           <div>Coordinates: {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</div>
                           <div style={{marginTop: '4px'}}>
                             <span style={{backgroundColor: selected.color, display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', marginRight: '6px'}}></span>
-                            {selected.mark_type} • Height: {selected.height}m
+                            {selected.mark_type}
                           </div>
                         </div>
                       </div>
@@ -1052,8 +1032,7 @@ async function deleteAll() {
                           disabled={
                             selected.label.trim() === '' ||
                             selected.lat < -90 || selected.lat > 90 ||
-                            selected.lng < -180 || selected.lng > 180 ||
-                            selected.height < 1
+                            selected.lng < -180 || selected.lng > 180
                           }
                         >
                           💾 Save Changes
