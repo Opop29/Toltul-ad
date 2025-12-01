@@ -15,8 +15,9 @@ CREATE TABLE IF NOT EXISTS public.ar_pois (
 -- Enable Row Level Security (RLS) if needed
 ALTER TABLE public.ar_pois ENABLE ROW LEVEL SECURITY;
 
--- Create policy for authenticated users to insert/select/delete their own markers
+-- Create policy for authenticated users to insert/select/delete/update their own markers
 -- Adjust based on your authentication setup
 CREATE POLICY "Users can view all markers" ON public.ar_pois FOR SELECT USING (true);
 CREATE POLICY "Users can insert markers" ON public.ar_pois FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update markers" ON public.ar_pois FOR UPDATE USING (true);
 CREATE POLICY "Users can delete markers" ON public.ar_pois FOR DELETE USING (true);

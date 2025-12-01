@@ -208,21 +208,55 @@ const Builded: React.FC = () => {
   }
 
   async function updatePoi(p: POI) {
-   if (!p.id) return;
-   await supabase
-     .from("ar_pois")
-     .update({
-       label: p.label,
-       mark_type: p.mark_type,
-       color: p.color,
-       height: p.height,
-       lat: p.lat,
-       lng: p.lng,
-     })
-     .eq("id", p.id);
+   if (!p.id) {
+     console.error('No ID provided for update');
+     alert('Cannot save: Marker has no ID');
+     return;
+   }
+   console.log('Saving marker ID:', p.id, 'Type:', typeof p.id);
+   console.log('Update data:', {
+     label: p.label,
+     mark_type: p.mark_type,
+     color: p.color,
+     height: p.height,
+     lat: p.lat,
+     lng: p.lng,
+   });
+   try {
+     const { data, error } = await supabase
+       .from("ar_pois")
+       .update({
+         label: p.label,
+         mark_type: p.mark_type,
+         color: p.color,
+         height: p.height,
+         lat: p.lat,
+         lng: p.lng,
+       })
+       .eq("id", p.id)
+       .select();
 
-   fetchPois();
-   setSelected(null);
+     if (error) {
+       console.error('Supabase error updating marker:', error);
+       alert('Failed to save changes: ' + error.message);
+       return;
+     }
+
+     console.log('Update response data:', data);
+     if (!data || data.length === 0) {
+       console.warn('No rows were updated. Marker may not exist or ID mismatch.');
+       alert('Warning: No changes were made. Please check if the marker exists.');
+       return;
+     }
+
+     console.log('Marker updated successfully, rows affected:', data.length);
+     alert('Changes saved successfully!');
+     fetchPois();
+     setSelected(null);
+   } catch (err) {
+     console.error('Update failed with exception:', err);
+     alert('Failed to save changes. Please try again.');
+   }
  }
 
   async function setCoords(p: POI) {
@@ -909,12 +943,19 @@ async function deleteAll() {
                         </div>
                       )}
                       <div>
-                        <label>Label</label>
+                        <label>Label *</label>
                         <input
                           className="input"
                           value={selected.label}
                           onChange={(e) => setSelected({ ...selected, label: e.target.value })}
+                          placeholder="Enter marker label"
+                          required
                         />
+                        {selected.label.trim() === '' && (
+                          <div style={{color: '#e53e3e', fontSize: '0.8rem', marginTop: '4px'}}>
+                            Label is required
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label>Mark Type</label>
@@ -941,24 +982,40 @@ async function deleteAll() {
                       </div>
                       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16}}>
                         <div>
-                          <label>Latitude</label>
+                          <label>Latitude *</label>
                           <input
                             className="input"
                             type="number"
                             step="0.00001"
+                            min="-90"
+                            max="90"
                             value={selected.lat}
                             onChange={(e) => setSelected({ ...selected, lat: Number(e.target.value) })}
+                            placeholder="-90 to 90"
                           />
+                          {(selected.lat < -90 || selected.lat > 90) && (
+                            <div style={{color: '#e53e3e', fontSize: '0.8rem', marginTop: '4px'}}>
+                              Latitude must be between -90 and 90
+                            </div>
+                          )}
                         </div>
                         <div>
-                          <label>Longitude</label>
+                          <label>Longitude *</label>
                           <input
                             className="input"
                             type="number"
                             step="0.00001"
+                            min="-180"
+                            max="180"
                             value={selected.lng}
                             onChange={(e) => setSelected({ ...selected, lng: Number(e.target.value) })}
+                            placeholder="-180 to 180"
                           />
+                          {(selected.lng < -180 || selected.lng > 180) && (
+                            <div style={{color: '#e53e3e', fontSize: '0.8rem', marginTop: '4px'}}>
+                              Longitude must be between -180 and 180
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div>
@@ -970,16 +1027,54 @@ async function deleteAll() {
                           value={selected.height}
                           onChange={(e) => setSelected({ ...selected, height: Number(e.target.value) })}
                         />
+                        {selected.height < 1 && (
+                          <div style={{color: '#e53e3e', fontSize: '0.8rem', marginTop: '4px'}}>
+                            Height must be at least 1 meter
+                          </div>
+                        )}
                       </div>
-                      <div style={{marginTop:20, display: 'flex', gap: 12}}>
-                        <button className="btn primary" onClick={() => updatePoi(selected)}>
-                          Save Changes
+
+                      {/* Location Preview */}
+                      <div style={{marginTop: '16px', padding: '12px', background: 'rgba(0, 124, 240, 0.05)', borderRadius: '8px', border: '1px solid rgba(0, 124, 240, 0.2)'}}>
+                        <h4 style={{margin: '0 0 8px 0', color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.9rem'}}>📍 Location Preview</h4>
+                        <div style={{fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)'}}>
+                          <div>Coordinates: {selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</div>
+                          <div style={{marginTop: '4px'}}>
+                            <span style={{backgroundColor: selected.color, display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', marginRight: '6px'}}></span>
+                            {selected.mark_type} • Height: {selected.height}m
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{marginTop:20, display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+                        <button
+                          className="btn primary"
+                          onClick={() => updatePoi(selected)}
+                          disabled={
+                            selected.label.trim() === '' ||
+                            selected.lat < -90 || selected.lat > 90 ||
+                            selected.lng < -180 || selected.lng > 180 ||
+                            selected.height < 1
+                          }
+                        >
+                          💾 Save Changes
+                        </button>
+                        <button
+                          className="btn"
+                          onClick={() => {
+                            // Reset to original values (assuming we have original data)
+                            fetchPois(); // Refresh to get original data
+                            setSelected(null);
+                            setTimeout(() => setSelected({ ...selected, editing: false }), 100);
+                          }}
+                          style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}
+                        >
+                          🔄 Reset Changes
                         </button>
                         <button className="btn danger" onClick={() => handleDeleteClick('single', selected)}>
-                          Delete Marker
+                          🗑️ Delete Marker
                         </button>
                         <button className="btn" onClick={() => setSelected(null)}>
-                          Cancel
+                          ❌ Cancel
                         </button>
                       </div>
                       <div style={{marginTop:12, padding: '12px', background: 'rgba(255,107,107,0.08)', borderRadius: '8px', border: '1px solid rgba(255,107,107,0.2)'}}>
