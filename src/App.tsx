@@ -3,7 +3,6 @@ import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 import EnterPasscode from "./pages/EnterPasscode";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -26,12 +25,12 @@ const App: React.FC = () => (
     <IonReactRouter>
       <IonRouterOutlet>
         <Route exact path="/Toltul-ad/enter-passcode" component={EnterPasscode} />
-        <ProtectedRoute exact path="/Toltul-ad/home" component={Home} />
+        <Route exact path="/Toltul-ad/home" component={Home} />
         <Route exact path="/Toltul-ad/">
-          <Redirect to="/Toltul-ad/enter-passcode" />
+          <Redirect to="/Toltul-ad/home" />
         </Route>
       </IonRouterOutlet>
-      <ProtectedRoute path="/Toltul-ad" component={TabsLayout} />
+      <Route path="/Toltul-ad" component={TabsLayout} />
     </IonReactRouter>
   </IonApp>
 );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, Route } from "react-router-dom";
+import { Redirect, Route, useLocation } from "react-router-dom";
 import {
   IonTabs,
   IonRouterOutlet,
@@ -19,6 +19,7 @@ import { menuController } from "@ionic/core";
 
 const TabsLayout: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleMenuOpen = () => setMenuOpen(true);
@@ -60,7 +61,8 @@ const TabsLayout: React.FC = () => {
         </Route>
       </IonRouterOutlet>
 
-      <IonTabBar slot="bottom" className="tabs-bar">
+      {location.pathname !== '/Toltul-ad/enter-passcode' && (
+        <IonTabBar slot="bottom" className="tabs-bar">
         <IonTabButton tab="home" href="/Toltul-ad/home" className="tab-btn">
           <IonIcon icon={homeOutline} />
           <IonLabel>Home</IonLabel>
@@ -82,6 +84,7 @@ const TabsLayout: React.FC = () => {
           <span className="tab-indicator" />
         </IonTabButton>
       </IonTabBar>
+      )}
       </IonTabs>
     </>
   );

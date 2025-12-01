@@ -1112,9 +1112,9 @@
 
 /* Sidebar Menu Styles */
 .sidebar-menu {
-  --width: 320px;
-  --background: linear-gradient(180deg, #0b2e66 0%, #1a365d 50%, #2d3748 100%);
-  --border-radius: 0;
+  --width: 320px !important;
+  --background: linear-gradient(180deg, #0b2e66 0%, #1a365d 50%, #2d3748 100%) !important;
+  --border-radius: 0 !important;
 }
 
 .sidebar-header {
