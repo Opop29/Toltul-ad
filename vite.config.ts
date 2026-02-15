@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     legacy()
   ],
+   base :"Toltul-ad",
   test: {
     globals: true,
     environment: 'jsdom',
